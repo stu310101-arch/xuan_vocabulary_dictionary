@@ -326,6 +326,25 @@
             </div>
         </div>
 
+        <!-- 搜尋結果頁面 -->
+        <div id="search-results-page" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="showPage('home-page')" class="btn btn-purple"><i class="fa fa-home mr-2"></i>返回主頁</button>
+                <h2 class="text-3xl font-bold" style="color: var(--color-text-dark);">搜尋結果</h2>
+                <div></div>
+            </div>
+            <div id="search-results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Search results will be injected here by JS -->
+            </div>
+        </div>
+
+        <!-- 查無單字頁面 -->
+        <div id="no-results-page" class="hidden text-center min-h-screen flex flex-col justify-center items-center">
+            <h2 class="text-4xl font-bold text-red-500 mb-4">查無此字</h2>
+            <p class="text-xl mb-8 text-gray-600">抱歉，單字庫中暫時沒有關於「<span id="no-results-term" class="font-bold text-purple-500"></span>」的資料。</p>
+            <button onclick="showPage('home-page')" class="btn btn-purple text-xl"><i class="fa fa-home mr-2"></i>返回主頁</button>
+        </div>
+
 
         <!-- 練習頁面 - 設定 -->
         <div id="practice-setup-page" class="hidden min-h-screen flex flex-col justify-center items-center text-center" style="background-color: #ffe5ec;">
@@ -614,7 +633,7 @@
     <script>
         // --- 資料庫 ---
         let vocabulary = [
-          {
+         {
   "word": "zeal",
   "definitions": [
     {
@@ -62339,8 +62358,7 @@
     "synonyms": [
       "N/A"
     ]
-  }
-
+  } 
         ];
 
         // --- 全域變數和狀態管理 ---
@@ -62378,31 +62396,95 @@
 
         function openModal(modalId) { document.getElementById(modalId).classList.remove('hidden'); }
         function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
+        
+        function renderSearchResults(words, searchTerm) {
+            const grid = document.getElementById('search-results-grid');
+            const title = document.querySelector('#search-results-page h2');
+            title.textContent = `"${searchTerm}" 的搜尋結果 (${words.length})`;
+            grid.innerHTML = '';
+
+            if (words.length === 0) {
+                grid.innerHTML = `<p class="text-center text-gray-500 col-span-full mt-8">找不到符合的單字。</p>`;
+                return;
+            }
+
+            // vocabulary is already sorted by organizeAndSortWords()
+            const sortedVocabulary = vocabulary;
+
+            words.forEach(wordObj => {
+                const card = document.createElement('button');
+                card.className = 'btn btn-blue text-lg text-center p-4 h-32 flex flex-col justify-center items-center';
+                
+                let meanings = wordObj.definitions.map(def => def.meaning).join(', ');
+                card.innerHTML = `
+                    <span class="text-2xl font-bold block">${wordObj.word}</span>
+                    <span class="text-sm mt-2 text-gray-600 block">${meanings}</span>
+                `;
+                
+                card.onclick = () => {
+                    const wordIndexInVocab = sortedVocabulary.findIndex(v => v.word === wordObj.word);
+                    if (wordIndexInVocab === -1) {
+                        alert('抱歉，發生錯誤，找不到單字。');
+                        return;
+                    }
+                    
+                    // Create a temporary "unit" of 10 words around the found word for context
+                    const unitSize = 10;
+                    const unitNumber = Math.floor(wordIndexInVocab / unitSize);
+                    const startIndex = unitNumber * unitSize;
+                    const tempUnit = sortedVocabulary.slice(startIndex, startIndex + unitSize);
+                    const indexInTempUnit = wordIndexInVocab % unitSize;
+
+                    const tempUnitKey = 'SEARCH';
+                    organizedWords[tempUnitKey] = { 1: tempUnit };
+                    
+                    startFlashcardSession(tempUnitKey, 1, indexInTempUnit, 'search');
+                };
+                grid.appendChild(card);
+            });
+        }
+
 
         // --- 搜尋 & 新增/編輯單字邏輯 ---
         function searchWord() {
             const input = document.getElementById('search-input');
-            const searchTerm = input.value.trim().toLowerCase();
+            const searchTerm = input.value.trim();
             if (!searchTerm) return;
 
-            const foundWord = vocabulary.find(v => v.word.toLowerCase() === searchTerm);
-            if (foundWord) {
-                const letter = foundWord.word[0].toUpperCase();
-                let unitNum, wordIndex;
-                const units = organizedWords[letter] || {};
-                for (const uNum in units) {
-                    const index = units[uNum].findIndex(w => w.word === foundWord.word);
-                    if (index !== -1) {
-                        unitNum = uNum;
-                        wordIndex = index;
-                        break;
-                    }
-                }
-                if (unitNum !== undefined) {
-                    startFlashcardSession(letter, unitNum, wordIndex);
+            const isChinese = /[\u4e00-\u9fa5]/.test(searchTerm);
+
+            if (isChinese) {
+                const matchedWords = vocabulary.filter(wordObj => 
+                    wordObj.definitions.some(def => def.meaning.includes(searchTerm))
+                );
+
+                if (matchedWords.length > 0) {
+                    renderSearchResults(matchedWords, searchTerm);
+                    showPage('search-results-page');
+                } else {
+                    document.getElementById('no-results-term').textContent = searchTerm;
+                    showPage('no-results-page');
                 }
             } else {
-                showConfirmModal('無收錄單字', `是否要新增單字 "${searchTerm}" 至資料庫？`, () => openWordForm(null, searchTerm));
+                const searchTermLower = searchTerm.toLowerCase();
+                const foundWord = vocabulary.find(v => v.word.toLowerCase() === searchTermLower);
+                if (foundWord) {
+                    const wordIndexInVocab = vocabulary.findIndex(v => v.word === foundWord.word);
+                    if (wordIndexInVocab === -1) return;
+                    
+                    const unitSize = 10;
+                    const unitNumber = Math.floor(wordIndexInVocab / unitSize);
+                    const startIndex = unitNumber * unitSize;
+                    const tempUnit = vocabulary.slice(startIndex, startIndex + unitSize);
+                    const indexInTempUnit = wordIndexInVocab % unitSize;
+
+                    const tempUnitKey = 'SEARCH';
+                    organizedWords[tempUnitKey] = { 1: tempUnit };
+                    
+                    startFlashcardSession(tempUnitKey, 1, indexInTempUnit, 'search');
+                } else {
+                    showConfirmModal('無收錄單字', `是否要新增單字 "${searchTerm}" 至資料庫？`, () => openWordForm(null, searchTerm));
+                }
             }
             input.value = '';
         }
@@ -62727,6 +62809,8 @@
             const backButton = document.getElementById('back-to-minor-units');
             if (sessionType === 'random') {
                 backButton.onclick = () => showPage('learn-main-page');
+            } else if (sessionType === 'search') {
+                backButton.onclick = () => showPage('home-page'); // From search, always go back to home.
             } else {
                 backButton.onclick = () => showMinorUnits(letter, sessionType);
             }
@@ -64180,5 +64264,4 @@
     </script>
 </body>
 </html>
-
 
