@@ -64031,6 +64031,7 @@
       "N/A"
     ]
   }
+
         ];
 
         // --- 全域變數和狀態管理 ---
@@ -64047,6 +64048,7 @@
         let favoriteFolders = [new Set(), new Set(), new Set(), new Set(), new Set()];
         let userAddedWordsSet = new Set();
         let lastSearchTerm = '';
+        let potionPityBonus = 0; // << 新增：魔藥保底機率
 
         // --- 資料保存與讀取 (LocalStorage) ---
         function saveData() {
@@ -64060,6 +64062,7 @@
                 localStorage.setItem('userAddedWordsData', JSON.stringify(serializableUserWords));
                 // potionGame.save() 已經被整合進 potions 數組的狀態，所以直接儲存 potions 即可
                 localStorage.setItem('potionsData', JSON.stringify(potions));
+                localStorage.setItem('potionPityBonus', JSON.stringify(potionPityBonus)); // << 新增：儲存保底機率
                 console.log('遊戲資料已儲存！');
             } catch (e) {
                 console.error('儲存資料失敗:', e);
@@ -64072,6 +64075,7 @@
                 const savedFavorites = localStorage.getItem('favoriteFoldersData');
                 const savedUserWords = localStorage.getItem('userAddedWordsData');
                 const savedPotions = localStorage.getItem('potionsData');
+                const savedPityBonus = localStorage.getItem('potionPityBonus'); // << 新增：讀取保底機率
 
                 if (savedVocab) {
                     vocabulary = JSON.parse(savedVocab);
@@ -64094,6 +64098,9 @@
                             p.unlocked = savedPotion.unlocked;
                         }
                     });
+                }
+                if (savedPityBonus) { // << 新增
+                    potionPityBonus = JSON.parse(savedPityBonus);
                 }
                 console.log('遊戲資料已讀取！');
             } catch (e) {
@@ -65392,6 +65399,11 @@
                 { id: 113, name: "悲傷洋蔥汁", desc: "為什麼我的眼淚流不停...", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 1, timeRange: [26, 35] } },
                 { id: 114, name: "慢動作糖漿", desc: "接下來的五分鐘，你的動作會變慢。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 1, timeRange: [36, 45] } },
                 { id: 115, name: "漏水的杯子", desc: "魔藥從杯底漏光了，真可惜。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 1, timeRange: [46, 9999] } },
+                { id: 121, name: "飛高高藥水 (實驗品)", desc: "喝下後，你的身體會不受控制地向上飄...直到撞到天花板。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 0, timeRange: [0, 15] } },
+                { id: 122, name: "誠實豆 (超強效版)", desc: "不僅無法說謊，還會把你所有尷尬的秘密都說出來。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 0, timeRange: [16, 25] } },
+                { id: 123, name: "靜電產生器", desc: "你變成了一個行走的人形靜電產生器，碰什麼都觸電。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 0, timeRange: [26, 35] } },
+                { id: 124, name: "絕對路痴藥劑", desc: "即使在家裡，你也找不到廁所。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 0, timeRange: [36, 45] } },
+                { id: 125, name: "漏光的鍋子", desc: "魔藥在煉製過程中就漏光了，只剩下一些奇怪的殘渣。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 0, timeRange: [46, 9999] } },
                 
                 // --- 新手巫師 (5題) ---
                 { id: 201, name: "天才叡智藥劑", desc: "短時間內大幅提升理解與記憶能力。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 3, timeRange: [0, 30] } },
@@ -65409,6 +65421,11 @@
                 { id: 213, name: "磁力干擾劑", desc: "你身邊的湯匙和叉子會輕微顫抖。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 1, timeRange: [46, 60] } },
                 { id: 214, name: "易怒辣椒油", desc: "喝下後，一點小事就可能讓你生氣。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 1, timeRange: [61, 75] } },
                 { id: 215, name: "煮沸的泥水", desc: "看起來不太能喝的樣子...", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 1, timeRange: [76, 9999] } },
+                { id: 221, name: "反向思維糖漿", desc: "你想往左，身體就往右。你想說'是'，嘴巴就說'否'。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 0, timeRange: [0, 30] } },
+                { id: 222, name: "萬物黏著劑", desc: "你的手掌變得極度黏稠，所有東西拿起來就放不下了。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 0, timeRange: [31, 45] } },
+                { id: 223, name: "存在感稀釋液", desc: "人們會下意識忽略你，甚至會直接從你身體穿過去。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 0, timeRange: [46, 60] } },
+                { id: 224, name: "個人專屬雨雲", desc: "一朵小烏雲會一直跟在你頭上，並且只對你下雨。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 0, timeRange: [61, 75] } },
+                { id: 225, name: "爆炸性失敗", desc: "藥鍋發出巨響，把你炸得灰頭土臉，什麼也沒剩下。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 0, timeRange: [76, 9999] } },
                 
                 // --- 普通法師 (8題) ---
                 { id: 301, name: "語言通曉藥劑", desc: "一個小時內，你能聽懂並說出任何一種語言。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 3, timeRange: [0, 50] } },
@@ -65426,6 +65443,11 @@
                 { id: 313, name: "色彩失真鏡片", desc: "你眼中的世界暫時失去了所有色彩。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 1, timeRange: [71, 90] } },
                 { id: 314, name: "無感藥劑", desc: "暫時嚐不出任何食物的味道。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 1, timeRange: [91, 120] } },
                 { id: 315, name: "爆炸失敗的藥渣", desc: "發出一聲悶響和一縷黑煙，什麼也沒發生。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 1, timeRange: [121, 9999] } },
+                { id: 321, name: "動物語言(副作用版)", desc: "你聽得懂動物說話，但牠們都在嘲笑你的髮型。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 0, timeRange: [0, 50] } },
+                { id: 322, name: "無重力藥水", desc: "你和周遭的所有物品都開始漂浮在空中，場面一片混亂。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 0, timeRange: [51, 70] } },
+                { id: 323, name: "性別轉換劑(不穩定)", desc: "你的性別每五分鐘變換一次，持續一整天。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 0, timeRange: [71, 90] } },
+                { id: 324, name: "絕對霉運藥劑", desc: "走路會平地摔，喝水會嗆到，出門會被鳥屎滴到。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 0, timeRange: [91, 120] } },
+                { id: 325, name: "煉金術的背叛", desc: "你試圖點石成金，結果把金幣變成了石頭。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 0, timeRange: [121, 9999] } },
 
                 // --- 有點厲害煉藥師 (10題) ---
                 { id: 401, name: "智慧賢者之釀", desc: "傳說中的魔藥，能讓你窺見知識的真理。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 3, timeRange: [0, 60] } },
@@ -65443,6 +65465,11 @@
                 { id: 413, name: "縮小藥水(不穩定)", desc: "你的小指頭縮小了一半，幾分鐘後又變回來了。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 1, timeRange: [91, 120] } },
                 { id: 414, "name": "遺忘之霧", "desc": "呃...我剛剛想說什麼來著？", "unlocked": false, "unlockConditions": { "difficulty": "alchemist", "stars": 1, "timeRange": [121, 160] } },
                 { id: 415, name: "一鍋混沌", desc: "所有材料胡亂地混在一起，發出奇怪的顏色和氣味。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 1, timeRange: [161, 9999] } },
+                { id: 421, name: "時間錯亂雞尾酒", desc: "你的時間感完全錯亂，一秒鐘感覺像一小時，一小時又感覺像一秒。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 0, timeRange: [0, 60] } },
+                { id: 422, name: "次元裂縫產生器", desc: "在你面前憑空出現一個小裂縫，裡面會隨機掉出奇怪的東西，比如一隻襪子或半個甜甜圈。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 0, timeRange: [61, 90] } },
+                { id: 423, name: "物理法則無視液", desc: "你試圖穿牆，結果成功地卡在牆壁裡了。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 0, timeRange: [91, 120] } },
+                { id: 424, name: "墨菲定律藥水", desc: "所有可能出錯的事情，都會在你身上以最糟糕的方式出錯。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 0, timeRange: [121, 160] } },
+                { id: 425, name: "哲學家的空瓶", desc: "瓶子裡什麼都沒有，但它引發了你對存在與虛無的深刻思考。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 0, timeRange: [161, 9999] } },
 
                 // --- 魔法學院長老 (15題) ---
                 { id: 501, name: "龍之息吹精油", desc: "讓你呼出的氣息帶有火焰的溫熱與硫磺的氣味。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 3, timeRange: [0, 100] } },
@@ -65460,6 +65487,11 @@
                 { id: 513, name: "說反話糖漿", desc: "接下來一個小時，你說的話都會是反義詞。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 1, timeRange: [141, 180] } },
                 { id: 514, name: "無盡噴嚏粉", desc: "每一次呼吸都可能觸發一次驚天動地的噴嚏。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 1, timeRange: [181, 220] } },
                 { id: 515, name: "失敗的奇蹟", desc: "雖然什麼效果都沒有，但瓶子本身很好看。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 1, timeRange: [221, 9999] } },
+                { id: 521, name: "龍之...呃...哈啾", desc: "你打了一個驚天動地的噴嚏，威力堪比龍息，吹飛了房間裡所有東西。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 0, timeRange: [0, 100] } },
+                { id: 522, name: "深淵凝望之眼", desc: "當你凝望深淵時，深淵給了你一個白眼然後走開了。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 0, timeRange: [101, 140] } },
+                { id: 523, name: "神格分裂劑", desc: "你的左手認為自己是智慧之神，右手認為自己是戰爭之神，然後它們就打起來了。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 0, timeRange: [141, 180] } },
+                { id: 524, name: "因果報應加速器", desc: "你剛才想的壞念頭立刻就得到了報應。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 0, timeRange: [181, 220] } },
+                { id: 525, name: "造物主的玩笑", desc: "你創造出了一個有生命的...馬桶刷。它看起來不太開心。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 0, timeRange: [221, 9999] } },
 
                 // --- 魔藥煉製專精大師 (20題) ---
                 { id: 601, name: "時光洪流之粹", desc: "凝視藥水，能看見過去一分鐘的殘影。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 3, timeRange: [0, 150] } },
@@ -65710,22 +65742,38 @@
             }
             
             function checkUnlocks(difficulty, stars, time) {
-                let unlockedPotion = null;
-                const matchingPotion = potions.find(potion => {
+                const targetPotion = potions.find(potion => {
                     const cond = potion.unlockConditions;
-                    return !potion.unlocked &&
-                           cond.difficulty === difficulty &&
+                    return cond.difficulty === difficulty &&
                            cond.stars === stars &&
                            time >= cond.timeRange[0] &&
                            time <= cond.timeRange[1];
                 });
 
-                if (matchingPotion) {
-                    matchingPotion.unlocked = true;
-                    unlockedPotion = matchingPotion;
-                    saveData(); // Save data when a potion is unlocked
+                if (!targetPotion) {
+                    return { unlocked: false, message: 'no_potion' };
                 }
-                return unlockedPotion;
+                
+                if (targetPotion.unlocked) {
+                    return { unlocked: false, message: 'already_unlocked' };
+                }
+
+                const baseProb = { 3: 80, 2: 90, 1: 95, 0: 100 }[stars];
+                const finalProb = Math.min(100, baseProb + potionPityBonus);
+                const roll = Math.random() * 100;
+
+                if (roll < finalProb) {
+                    // Success
+                    targetPotion.unlocked = true;
+                    potionPityBonus = 0;
+                    saveData();
+                    return { unlocked: true, potion: targetPotion, message: 'success' };
+                } else {
+                    // Failure
+                    potionPityBonus += 5;
+                    saveData();
+                    return { unlocked: false, message: 'failure' };
+                }
             }
 
             function levelComplete() {
@@ -65736,16 +65784,22 @@
                 dom.finalStarRating.innerHTML = dom.starRating.innerHTML;
                 dom.completionTime.textContent = `完成時間: ${completionTime} 秒`;
                 
-                const newlyUnlockedPotion = checkUnlocks(state.currentDifficulty, finalStars, completionTime);
+                const unlockResult = checkUnlocks(state.currentDifficulty, finalStars, completionTime);
 
-                if (newlyUnlockedPotion) {
+                if (unlockResult.unlocked) {
                     dom.rewardSection.classList.remove('hidden');
                     dom.noRewardSection.classList.add('hidden');
-                    dom.potionName.textContent = newlyUnlockedPotion.name;
-                    dom.potionDesc.textContent = newlyUnlockedPotion.desc;
+                    dom.potionName.textContent = unlockResult.potion.name;
+                    dom.potionDesc.textContent = unlockResult.potion.desc;
                 } else {
                     dom.rewardSection.classList.add('hidden');
                     dom.noRewardSection.classList.remove('hidden');
+                    const noRewardP = dom.noRewardSection.querySelector('p');
+                    if (unlockResult.message === 'failure') {
+                        noRewardP.innerHTML = `真可惜！差一點就成功了...<br>下次獲得魔藥的機率將會提升 5%！`;
+                    } else { // 'no_potion' or 'already_unlocked'
+                        noRewardP.innerHTML = `表現不錯！但這次沒有解鎖新的魔藥，再接再厲！`;
+                    }
                 }
                 
                 dom.levelCompleteModal.classList.remove('hidden');
