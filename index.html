@@ -1,0 +1,2520 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英文單字學習與練習</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Kalam:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* --- 全域 & 主應用程式樣式 --- */
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #fffde7; /* 淡黃色背景 */
+        }
+        :root {
+            --color-pink: #ffc2d1;
+            --color-light-pink: #ffe5ec;
+            --color-purple: #c8b6ff;
+            --color-light-purple: #e7e0ff;
+            --color-blue: #bde0fe;
+            --color-light-blue: #e2efff;
+            --color-green: #b0e0b8;
+            --color-grass-green: #7CFC00;
+            --color-red: #ff9999;
+            --color-bright-red: #ff3b3b;
+            --color-text: #5d5d5d;
+            --color-text-dark: #3a3a3a;
+        }
+        .btn {
+            transition: all 0.3s ease;
+            border-radius: 9999px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 700;
+            color: var(--color-text-dark);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(0,0,0,0.15); }
+        .btn-pink { background-color: var(--color-pink); }
+        .btn-purple { background-color: var(--color-purple); }
+        .btn-blue { background-color: var(--color-blue); }
+
+        .flashcard-scene { perspective: 1000px; }
+        .flashcard { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
+        .flashcard.is-flipped { transform: rotateY(180deg); }
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            overflow: hidden; /* 確保內容不會溢出 */
+        }
+        .flashcard-front {
+            background: white;
+        }
+        .flashcard-back {
+            background: linear-gradient(to top right, var(--color-light-pink), var(--color-light-blue));
+            transform: rotateY(180deg);
+        }
+
+        #fx-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+        .confetti-success { position: absolute; width: 10px; height: 20px; opacity: 0.9; animation: confetti-fall 5s linear infinite; }
+        @keyframes confetti-fall { 0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+
+        #balloon-game-canvas { cursor: crosshair; background: linear-gradient(to bottom, #87CEEB, #f0f9ff); }
+
+        #favorite-btn.favorited { color: #FBBF24; /* yellow-400 */ }
+
+
+        /* --- 怪物遊戲專用樣式 --- */
+        .monster-game-screen {
+            transition: opacity 0.5s ease-in-out;
+            position: fixed; /* 使用 fixed 以覆蓋整個視窗 */
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; /* 確保遊戲在最上層 */
+        }
+
+        #monster-setup-page { background: linear-gradient(to bottom, #87CEEB 20%, #B0E0E6 100%); overflow: hidden; }
+        .sun { position: absolute; top: 5%; right: 8%; width: 80px; height: 80px; background: radial-gradient(circle, #FFF7B3, #FFD700); border-radius: 50%; box-shadow: 0 0 40px rgba(255, 223, 0, 0.8); }
+        .grass { position: absolute; bottom: 0; left: 0; width: 100%; height: 15%; background: linear-gradient(to top, #6B8E23, #9ACD32); z-index: 5; }
+        .grass::before { content: ''; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background-size: 40px 40px; background-image: linear-gradient(315deg, #9ACD32 50%, transparent 50%), linear-gradient(45deg, #9ACD32 50%, transparent 50%); background-position: -20px 0; }
+        .cloud { position: absolute; background: white; border-radius: 50%; opacity: 0.9; animation: float linear infinite; }
+        .cloud.c1 { width: 200px; height: 60px; top: 15%; animation-duration: 75s; animation-delay: -10s; }
+        .cloud.c2 { width: 150px; height: 45px; top: 25%; animation-duration: 90s; animation-delay: -30s; }
+        .cloud.c3 { width: 250px; height: 70px; top: 20%; animation-duration: 60s; animation-delay: -50s; }
+        .cloud::before, .cloud::after { content: ''; position: absolute; background: white; border-radius: 50%; }
+        .cloud.c1::before { width: 100px; height: 100px; top: -50px; left: 25px; } .cloud.c1::after  { width: 120px; height: 120px; top: -60px; right: 25px; }
+        .cloud.c2::before { width: 70px; height: 70px; top: -35px; left: 15px; } .cloud.c2::after  { width: 90px; height: 90px; top: -45px; right: 15px; }
+        .cloud.c3::before { width: 130px; height: 130px; top: -65px; left: 30px; } .cloud.c3::after  { width: 150px; height: 150px; top: -75px; right: 30px; }
+        @keyframes float { from { transform: translateX(-300px); } to { transform: translateX(calc(100vw + 100px)); } }
+
+        #monster-game-page { background: radial-gradient(ellipse at 50% 100%, #6b7280, #1f2937); }
+
+        .text-stroke-white { text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff; }
+        .text-stroke-red { text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff; }
+
+        .confetti { position: absolute; width: 10px; height: 20px; opacity: 0.8; animation: fall 5s linear infinite; }
+        @keyframes fall { 0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+
+        @keyframes monster-bob { 0% { transform: translateY(0); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0); } }
+        .monster-bob-animation { animation: monster-bob 2s ease-in-out infinite; }
+        @keyframes monster-tilt { 0%, 100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-5px) rotate(-8deg); } 75% { transform: translateY(-5px) rotate(8deg); } }
+        .monster-tilt-animation { animation: monster-tilt 4s ease-in-out infinite; transform-origin: bottom; }
+        @keyframes monster-hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .monster-hop-animation { animation: monster-hop 1s ease-in-out infinite; }
+        @keyframes monster-shake { 10%, 90% { transform: translate3d(-2px, 0, 0) rotate(-1deg); } 20%, 80% { transform: translate3d(4px, 0, 0) rotate(2deg); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0) rotate(-3deg); } 40%, 60% { transform: translate3d(6px, 0, 0) rotate(3deg); } }
+        .shake-animation { animation: monster-shake 0.8s cubic-bezier(.36,.07,.19,.97) both; }
+
+        /* --- 怪物遊戲失敗故障特效 --- */
+        .glitch-container { overflow: hidden; position: relative; }
+        .glitch-text { position: relative; }
+        .glitch-bg { animation: glitch-bg-anim 1s linear infinite alternate; pointer-events: none; }
+        .glitch-text::before, .glitch-text::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: transparent; clip-path: inset(0 0 0 0); }
+        .glitch-text::before { left: 2px; text-shadow: -2px 0 #ff00c1; animation: glitch-text-anim-1 2s infinite linear alternate-reverse; }
+        .glitch-text::after { left: -2px; text-shadow: -2px 0 #00fff9, 2px 2px #ff00c1; animation: glitch-text-anim-2 3s infinite linear alternate-reverse; }
+        .glitch-container::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%); background-size: 100% 4px; animation: scanlines 2s linear infinite; pointer-events: none; }
+        .glitch-block { position: absolute; background: #ff00c1; opacity: 0.3; animation: glitch-block-anim 5s steps(1) infinite; pointer-events: none; }
+        @keyframes glitch-block-anim { 0% { top: 10%; left: 10%; width: 50px; height: 50px; } 10% { top: 50%; left: 80%; width: 20px; height: 100px; } 20% { top: 90%; left: 40%; width: 80px; height: 30px; background: #00fff9;} 30% { top: 30%; left: 25%; width: 100px; height: 20px; } 40% { top: 70%; left: 60%; width: 40px; height: 90px; } 50% { top: 20%; left: 70%; width: 60px; height: 60px; background: #ffff00;} 60% { top: 60%; left: 15%; width: 90px; height: 40px; } 70% { top: 5%; left: 50%; width: 30px; height: 70px; } 80% { top: 80%; left: 30%; width: 120px; height: 25px; background: #00fff9;} 90% { top: 40%; left: 90%; width: 25px; height: 80px; } 100% { top: 15%; left: 5%; width: 70px; height: 50px; } }
+        @keyframes scanlines { from { background-position: 0 0; } to { background-position: 0 100%; } }
+        @keyframes glitch-bg-anim { 0% { transform: translate(0, 0); } 20% { transform: translate(-5px, 5px); } 40% { transform: translate(5px, -5px); } 60% { transform: translate(-5px, -5px); } 80% { transform: translate(5px, 5px); } 100% { transform: translate(0, 0); } }
+        @keyframes glitch-text-anim-1 { 0% { clip-path: inset(45% 0 45% 0); transform: skew(0.5deg); } 10% { clip-path: inset(15% 0 75% 0); } 20% { clip-path: inset(60% 0 10% 0); transform: skew(-0.5deg); } 30% { clip-path: inset(30% 0 40% 0); } 40% { clip-path: inset(80% 0 5% 0); transform: skew(0.2deg); } 50% { clip-path: inset(25% 0 65% 0); } 60% { clip-path: inset(70% 0 20% 0); transform: skew(-0.2deg); } 70% { clip-path: inset(10% 0 85% 0); } 80% { clip-path: inset(55% 0 35% 0); transform: skew(0.7deg); } 90% { clip-path: inset(90% 0 2% 0); } 100% { clip-path: inset(40% 0 50% 0); transform: skew(-0.7deg); } }
+        @keyframes glitch-text-anim-2 { 0% { clip-path: inset(78% 0 2% 0); transform: skew(0.7deg); } 10% { clip-path: inset(10% 0 80% 0); } 20% { clip-path: inset(95% 0 1% 0); transform: skew(-0.7deg); } 30% { clip-path: inset(33% 0 43% 0); } 40% { clip-path: inset(2% 0 90% 0); transform: skew(0.3deg); } 50% { clip-path: inset(40% 0 40% 0); } 60% { clip-path: inset(80% 0 15% 0); transform: skew(-0.3deg); } 70% { clip-path: inset(20% 0 77% 0); } 80% { clip-path: inset(65% 0 25% 0); transform: skew(0.9deg); } 90% { clip-path: inset(5% 0 88% 0); } 100% { clip-path: inset(50% 0 30% 0); transform: skew(-0.9deg); } }
+
+        /* --- 魔藥煉製遊戲專用樣式 --- */
+        #potion-game-wrapper {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #1f2937;
+            background-image:
+                radial-gradient(circle at 10% 10%, rgba(253, 224, 71, 0.1) 0%, transparent 30%),
+                radial-gradient(circle at 80% 90%, rgba(139, 92, 246, 0.1) 0%, transparent 30%);
+            overscroll-behavior: none;
+        }
+        .kalam-font {
+            font-family: 'Kalam', cursive;
+        }
+        .potion-bubble {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 9999px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: potion-float 6s ease-in-out infinite;
+            touch-action: none;
+        }
+        .potion-bubble:hover {
+            transform: scale(1.1);
+            z-index: 50 !important;
+        }
+        .potion-bubble.selected {
+            animation: none;
+            box-shadow: 0 0 20px 5px #fde047;
+            transform: scale(1.1);
+        }
+        .potion-bubble.paired {
+            pointer-events: none;
+        }
+        .magic-line {
+            stroke: #fde047;
+            stroke-width: 4;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 6px #fde047);
+            pointer-events: none;
+        }
+        .cauldron {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            height: 220px;
+            pointer-events: none;
+            transition: transform 0.5s;
+        }
+        .cauldron.active {
+            animation: bubble-pot 0.8s ease-in-out;
+        }
+        .star {
+            color: #4b5563; /* gray-600 */
+            transition: color 0.3s;
+        }
+        .star.filled {
+            color: #facc15; /* yellow-400 */
+            animation: pop-in 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        @keyframes potion-float {
+            0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+            25% { transform: translateY(-5px) translateX(5px) rotate(2deg); }
+            50% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+            75% { transform: translateY(5px) translateX(-5px) rotate(-2deg); }
+            100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+        }
+        @keyframes bubble-pot {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.1); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        @keyframes pop-in {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+        .modal-backdrop {
+            background-color: rgba(0,0,0,0.7);
+        }
+        .btn-magic {
+            background: linear-gradient(45deg, #8b5cf6, #ec4899);
+            border: 2px solid #a78bfa;
+            box-shadow: 0 0 10px rgba(167, 139, 250, 0.5), inset 0 0 5px rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-magic:hover {
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.8), inset 0 0 8px rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        .btn-magic:disabled {
+            background: #4b5563;
+            border-color: #6b7280;
+            cursor: not-allowed;
+            opacity: 0.5;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body class="text-gray-700">
+    <!-- 特效容器 -->
+    <div id="fx-container"></div>
+
+    <div id="app" class="container mx-auto p-4 max-w-5xl">
+        
+        <!-- 主頁面 -->
+        <div id="home-page" class="relative text-center min-h-screen flex flex-col justify-center items-center">
+             <!-- 搜尋功能 -->
+            <div class="absolute top-4 right-4 flex items-center bg-white rounded-full shadow-md">
+                <input type="text" id="search-input" placeholder="查詢單字..." class="py-2 px-4 rounded-l-full focus:outline-none w-48 sm:w-64">
+                <button onclick="searchWord()" class="bg-purple-400 text-white px-4 py-2 rounded-r-full hover:bg-purple-500"><i class="fa fa-search"></i></button>
+            </div>
+            
+            <h1 class="text-5xl font-bold mb-4" style="color: var(--color-purple);">英文單字隨身GO</h1>
+            <p class="text-xl mb-12" style="color: var(--color-text);">輕鬆學習，快樂練習</p>
+            <div class="space-y-6">
+                <button onclick="showPage('learn-main-page')" class="btn btn-pink text-2xl px-16 py-6">學習頁面</button>
+                <button onclick="showPage('practice-setup-page')" class="btn btn-blue text-2xl px-16 py-6">練習頁面</button>
+            </div>
+        </div>
+
+        <!-- 學習頁面 - 大單元 (A-Z) -->
+        <div id="learn-main-page" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="showPage('home-page')" class="btn btn-purple"><i class="fa fa-home mr-2"></i>主選單</button>
+                <h2 class="text-3xl font-bold" style="color: var(--color-text-dark);">選擇學習單元</h2>
+                <div></div>
+            </div>
+            <div id="major-units-grid" class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-9 gap-4 text-center"></div>
+        </div>
+        
+        <!-- 學習頁面 - 小單元 -->
+        <div id="learn-minor-page" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <button id="back-to-major-from-minor" class="btn btn-purple"><i class="fa fa-arrow-left mr-2"></i>返回</button>
+                <h2 id="minor-unit-title" class="text-3xl font-bold" style="color: var(--color-text-dark);"></h2>
+                <div id="minor-unit-header-right"></div>
+            </div>
+            <div id="minor-units-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- 學習頁面 - 單字卡 -->
+        <div id="flashcard-page" class="hidden">
+             <div class="flex justify-between items-center mb-4">
+                <button id="back-to-minor-units" class="btn btn-purple"><i class="fa fa-arrow-left mr-2"></i>返回小單元</button>
+                <div id="flashcard-progress" class="text-xl font-bold" style="color: var(--color-text);"></div>
+                <div id="flashcard-header-right" class="min-w-[150px] text-right"></div>
+            </div>
+            <div class="flashcard-scene h-[60vh] sm:h-[70vh] w-full">
+                <div id="flashcard" class="flashcard" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flashcard-face flashcard-front">
+                        <div class="relative w-full h-full flex flex-col justify-center items-center p-8">
+                            <button id="delete-word-btn" onclick="event.stopPropagation(); confirmDeleteWord();" class="hidden absolute top-4 right-4 text-2xl text-red-400 hover:text-red-600">
+                                <i class="fas fa-minus-circle"></i>
+                            </button>
+                            <h3 id="flashcard-word" class="text-6xl md:text-8xl font-bold text-center" style="color: var(--color-text-dark);"></h3>
+                            <button onclick="event.stopPropagation(); playPronunciation();" class="mt-8 text-5xl" style="color: var(--color-blue);"><i class="fas fa-volume-up"></i></button>
+                            <button id="favorite-btn" onclick="event.stopPropagation(); handleFavoriteClick()" class="absolute bottom-6 right-6 text-4xl text-gray-400 hover:text-yellow-400 transition-colors duration-200">
+                                <i class="fas fa-star"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flashcard-face flashcard-back relative">
+                         <div id="flashcard-details" class="w-full h-full overflow-y-auto p-8 text-left">
+                            <!-- JS will inject content here -->
+                         </div>
+                         <button id="edit-word-btn" onclick="event.stopPropagation(); openEditWordModal();" class="absolute top-4 left-6 text-2xl text-blue-400 hover:text-blue-600">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center items-center mt-6 space-x-8">
+                <button onclick="prevCard()" class="btn btn-pink text-2xl px-8 py-4"><i class="fa fa-chevron-left"></i></button>
+                <button onclick="nextCard()" class="btn btn-pink text-2xl px-8 py-4"><i class="fa fa-chevron-right"></i></button>
+            </div>
+        </div>
+        
+        <!-- 最愛資料夾選擇頁面 -->
+        <div id="favorite-folders-page" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="showPage('learn-main-page')" class="btn btn-purple"><i class="fa fa-arrow-left mr-2"></i>返回</button>
+                <h2 class="text-3xl font-bold" style="color: var(--color-text-dark);">選擇最愛資料夾</h2>
+                <div></div> <!-- Placeholder for alignment -->
+            </div>
+            <div id="favorite-folders-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- JS will generate folder buttons here -->
+            </div>
+        </div>
+
+
+        <!-- 練習頁面 - 設定 -->
+        <div id="practice-setup-page" class="hidden min-h-screen flex flex-col justify-center items-center text-center" style="background-color: #ffe5ec;">
+            <div class="bg-white p-8 sm:p-12 rounded-2xl shadow-lg w-full max-w-2xl">
+                <h2 class="text-3xl font-bold mb-6" style="color: var(--color-text-dark);">練習設定</h2>
+                
+                <div class="mb-6 text-left">
+                    <h3 class="text-xl font-semibold mb-3 text-center" style="color: var(--color-purple);">選擇練習範圍：</h3>
+                    <button onclick="openUnitSelectionModal()" class="w-full p-3 border-2 border-gray-200 rounded-lg text-lg text-center hover:bg-gray-50">點此選擇單元 (預設全部)</button>
+                </div>
+
+                <div class="mb-6 text-left">
+                    <h3 class="text-xl font-semibold mb-3 text-center" style="color: var(--color-pink);">選擇題型：</h3>
+                    <select id="quiz-type" class="w-full p-3 border-2 border-gray-200 rounded-lg text-lg">
+                        <option value="balloon">射氣球 (看中文選英文)</option>
+                        <option value="monster-challenge">怪物挑戰 (看提示拼單字)</option>
+                        <option value="potion">魔藥煉製 (單字配對)</option>
+                    </select>
+                </div>
+                
+                <div class="flex gap-4 mt-8">
+                    <button onclick="showPage('home-page')" class="btn btn-purple flex-1 py-4 text-xl">回主選單</button>
+                    <button onclick="startPractice()" class="btn btn-pink flex-1 py-4 text-xl">開始練習</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 射氣球遊戲頁面 -->
+        <div id="balloon-game-page" class="hidden">
+            <div class="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-4">
+                 <div class="relative w-full" style="padding-top: 75%;"> <!-- 4:3 aspect ratio -->
+                    <canvas id="balloon-game-canvas" class="absolute top-0 left-0 w-full h-full rounded-lg"></canvas>
+                    <div id="balloon-game-ui" class="absolute top-0 left-0 w-full h-full p-4 flex flex-col pointer-events-none">
+                        <div class="flex justify-between items-center text-gray-800 pointer-events-auto">
+                            <button onclick="endPractice()" class="btn btn-purple text-sm sm:text-base">結束遊戲</button>
+                            <div class="text-center"><div id="balloon-question" class="text-xl sm:text-3xl font-bold bg-white/70 px-4 py-2 rounded-lg"></div></div>
+                            <div class="flex flex-col sm:flex-row items-center gap-4">
+                                <div class="text-lg sm:text-2xl font-bold bg-white/70 px-3 py-1 rounded-lg">分數: <span id="balloon-score">0</span></div>
+                                <div class="text-lg sm:text-2xl font-bold bg-white/70 px-3 py-1 rounded-lg">時間: <span id="balloon-timer">0</span></div>
+                            </div>
+                        </div>
+                        <div id="balloon-game-overlay" class="absolute inset-0 bg-black/50 flex-col justify-center items-center text-center text-white p-4 rounded-lg hidden pointer-events-auto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 成功/失敗頁面 (通用) -->
+        <div id="success-page" class="hidden fixed inset-0 flex flex-col justify-center items-center text-center z-50" style="background-color: var(--color-light-blue);"><h1 class="text-8xl font-bold mb-4" style="color: var(--color-grass-green);">成功</h1><h2 class="text-5xl font-bold mb-12" style="color: var(--color-bright-red);">恭喜!!!</h2><button onclick="showPage('practice-setup-page')" class="btn btn-pink text-2xl px-12 py-4">再玩一次</button></div>
+        <div id="failure-page" class="hidden fixed inset-0 flex flex-col justify-center items-center text-center z-50" style="background-color: #1a1a1a; color: white;"><h1 class="text-8xl font-bold mb-4" style="color: var(--color-bright-red);">失敗</h1><p class="text-3xl mb-12">別灰心，下次再努力！加油！</p><button onclick="showPage('practice-setup-page')" class="btn btn-purple text-2xl px-12 py-4">再試一次</button></div>
+    </div>
+    
+    <!-- 全域彈出視窗 -->
+    <div id="global-modals">
+        <!-- 單元選擇彈出視窗 -->
+        <div id="unit-selection-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div class="bg-white p-6 rounded-2xl shadow-lg max-w-2xl w-full max-h-[80vh] flex flex-col"><h3 class="text-2xl font-bold mb-4 text-center" style="color: var(--color-purple);">選擇練習範圍 (可複選)</h3><div id="unit-selection-container" class="overflow-y-auto flex-grow border-t border-b py-4"></div><div class="mt-6 text-center"><button onclick="confirmUnitSelection()" class="btn btn-pink text-xl px-12">確認</button></div></div>
+        </div>
+        <!-- 新增/編輯單字表單視窗 -->
+        <div id="word-form-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div class="bg-white p-6 rounded-2xl shadow-lg max-w-lg w-full max-h-[90vh] flex flex-col">
+                <h3 id="word-form-title" class="text-2xl font-bold mb-4 text-center" style="color: var(--color-purple);"></h3>
+                <div class="overflow-y-auto flex-grow pr-4 space-y-4">
+                    <div><label class="font-semibold">英文單字</label><input type="text" id="word-form-en" class="w-full p-2 border rounded mt-1 bg-gray-200" disabled></div>
+                    
+                    <div id="definitions-container" class="space-y-4">
+                        <!-- JS will inject definition blocks here -->
+                    </div>
+
+                    <button onclick="addDefinitionBlock()" class="btn btn-blue w-full mt-2"><i class="fa fa-plus mr-2"></i>新增定義</button>
+
+                    <div><label class="font-semibold">同義字 (用逗號分隔)</label><input type="text" id="word-form-synonyms" class="w-full p-2 border rounded mt-1" placeholder="如: apple, banana..."></div>
+                </div>
+                <div class="mt-6 pt-4 border-t flex justify-end gap-4">
+                    <button onclick="closeModal('word-form-modal')" class="btn btn-purple px-8 py-3 text-lg"><i class="fa fa-times mr-2"></i>取消</button>
+                    <button id="word-form-save-btn" class="btn btn-pink px-8 py-3 text-lg"><i class="fa fa-save mr-2"></i>儲存</button>
+                </div>
+            </div>
+        </div>
+         <!-- 加入最愛資料夾選擇視窗 -->
+        <div id="add-to-favorite-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div class="bg-white p-8 rounded-2xl shadow-lg text-center max-w-lg w-full">
+                <h3 class="text-2xl font-bold mb-6" style="color: var(--color-text-dark);">選擇要加入的資料夾</h3>
+                <div id="favorite-modal-folders" class="grid grid-cols-3 gap-4 mb-6">
+                    <!-- JS will inject definition blocks here -->
+                </div>
+            </div>
+        </div>
+        <!-- 確認視窗 (通用) -->
+        <div id="confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div class="bg-white p-8 rounded-2xl shadow-lg text-center max-w-sm w-full">
+                <h3 id="confirm-modal-title" class="text-2xl font-bold mb-4" style="color: var(--color-text-dark);"></h3>
+                <p id="confirm-modal-text" class="text-lg mb-6"></p>
+                <div class="flex justify-center gap-4">
+                    <button id="confirm-modal-yes" class="btn btn-pink px-10 py-3 text-lg">是</button>
+                    <button onclick="closeModal('confirm-modal')" class="btn btn-purple px-10 py-3 text-lg">否</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 怪物遊戲 HTML 結構 -->
+    <div id="monster-game-container">
+        <!-- 設定畫面 -->
+        <div id="monster-setup-page" class="monster-game-screen flex-col hidden">
+            <div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+            <div class="relative w-full max-w-md p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg text-center z-10">
+                <h1 class="text-4xl font-bold text-gray-800 mb-6">英文單字怪獸挑戰</h1>
+                <div class="mb-6"><label for="monster-hp-select" class="block text-lg font-medium text-gray-700 mb-2">選擇怪物血量</label><select id="monster-hp-select" class="w-full p-3 border border-gray-300 rounded-lg text-lg focus:ring-2 focus:ring-blue-500"><option value="100">100 HP</option><option value="300">300 HP</option><option value="500">500 HP</option></select></div>
+                <div class="mb-8"><label for="monster-time-select" class="block text-lg font-medium text-gray-700 mb-2">選擇時間限制</label><select id="monster-time-select" class="w-full p-3 border border-gray-300 rounded-lg text-lg focus:ring-2 focus:ring-blue-500"><option value="75">75 秒</option><option value="120">120 秒</option><option value="180">180 秒</option></select></div>
+                <div class="flex gap-4">
+                     <button id="monster-back-btn" class="w-full bg-gray-400 text-white py-3 rounded-lg text-xl font-bold hover:bg-gray-500 transition duration-300 transform hover:scale-105">返回設定</button>
+                    <button id="monster-start-btn" class="w-full bg-blue-600 text-white py-3 rounded-lg text-xl font-bold hover:bg-blue-700 transition duration-300 transform hover:scale-105">開始挑戰！</button>
+                </div>
+            </div>
+            <div class="grass"></div>
+        </div>
+        <!-- 遊戲畫面 -->
+        <div id="monster-game-page" class="monster-game-screen flex-col items-center justify-between hidden p-4 md:p-8">
+            <div class="w-full flex justify-between items-start text-gray-200"><div id="monster-hp-bar-container" class="relative w-48 h-8 bg-gray-900/50 rounded-full border-2 border-black shadow-inner"><div id="monster-hp-bar-fill" class="h-full bg-red-500 rounded-full transition-all duration-300" style="width: 100%;"></div><span id="monster-hp-text" class="absolute inset-0 w-full h-full flex items-center justify-center text-white font-bold text-lg tracking-wider">HP: 100/100</span></div><div id="monster-timer-display" class="text-3xl font-bold text-red-500">60</div></div>
+            <div class="flex flex-col items-center"><div id="monster-display" class="mb-4" style="width: 200px; height: 200px;"></div><div id="monster-hint-display" class="text-2xl md:text-3xl font-bold text-center p-4 bg-black/40 backdrop-blur-sm rounded-lg shadow"><p id="monster-word-hint" class="text-gray-100"></p><p id="monster-word-structure" class="text-sky-400 mt-1"></p></div></div>
+            <div class="w-full max-w-md flex flex-col items-center"><p id="monster-feedback-display" class="h-6 text-red-400 font-bold mb-2"></p><input type="text" id="monster-answer-input" class="w-full p-4 border-2 bg-gray-800/80 border-gray-600 text-white rounded-lg text-2xl text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400" placeholder="在這裡輸入答案..." autocomplete="off"></div>
+            <div class="w-full max-w-md flex justify-between items-center"><button id="monster-end-game-btn" class="bg-red-600 text-white py-2 px-4 rounded-lg font-bold hover:bg-red-700 transition duration-300">直接結束</button><button id="monster-skip-btn" class="bg-yellow-500 text-white py-2 px-4 rounded-lg font-bold hover:bg-yellow-600 transition duration-300">跳過此題 (怪物會回血)</button></div>
+        </div>
+        <!-- 成功畫面 -->
+        <div id="monster-win-page" class="monster-game-screen hidden flex-col items-center justify-center text-center bg-gradient-to-b from-sky-200 to-sky-400"><div class="relative"><h1 class="text-9xl font-black text-green-500 text-stroke-white">成功</h1><p class="text-3xl font-bold text-black mt-4">你是勇者 你好棒!</p></div><button onclick="switchScreen('monster-win-page', 'monster-setup-page')" class="mt-8 bg-white text-blue-600 py-3 px-8 rounded-lg text-xl font-bold hover:bg-gray-200 transition duration-300">再玩一次</button></div>
+        <!-- 失敗畫面 -->
+        <div id="monster-lose-page" class="monster-game-screen hidden flex-col items-center justify-center text-center bg-gradient-to-b from-black via-black to-red-900 glitch-container">
+            <div class="relative w-full text-center z-10">
+                <h1 class="glitch-text text-9xl font-black text-red-500 text-stroke-red" data-text="失敗">失敗</h1>
+                <p class="glitch-text text-2xl text-white mt-6" data-text="怪物吞噬了英文世界">怪物吞噬了英文世界</p>
+                <p class="glitch-text text-xl text-white mt-2" data-text="努力學習 別灰心 英文世界等你來拯救!">努力學習 別灰心 英文世界等你來拯救!</p>
+                <button onclick="switchScreen('monster-lose-page', 'monster-setup-page')" class="mt-8 bg-gray-700 text-white py-3 px-8 rounded-lg text-xl font-bold hover:bg-gray-600 transition duration-300 border-2 border-white">重新來過</button>
+            </div>
+            <div class="glitch-block"></div>
+            <div class="glitch-bg"></div>
+        </div>
+    </div>
+    
+    <!-- 魔藥煉製遊戲 Wrapper -->
+    <div id="potion-game-wrapper" class="hidden fixed inset-0 w-full h-full text-white">
+        <!-- Start Screen -->
+        <div id="potion-start-screen" class="w-full h-full flex items-center justify-center text-center p-8 space-y-8">
+            <div>
+                <h1 class="text-6xl md:text-8xl font-bold text-yellow-300 kalam-font" style="text-shadow: 0 0 15px #fde047;">Word Potion</h1>
+                <p class="text-xl text-gray-300">單字魔藥</p>
+                <div class="space-y-4 flex flex-col items-center mt-8">
+                    <h2 class="text-2xl text-violet-300">選擇難度</h2>
+                    <button data-difficulty="easy" class="potion-difficulty-btn btn-magic w-64 text-lg font-bold py-3 px-6 rounded-full">初級 (3題)</button>
+                    <button data-difficulty="medium" class="potion-difficulty-btn btn-magic w-64 text-lg font-bold py-3 px-6 rounded-full">中級 (5題)</button>
+                    <button data-difficulty="hard" class="potion-difficulty-btn btn-magic w-64 text-lg font-bold py-3 px-6 rounded-full">高級 (8題)</button>
+                    <button data-difficulty="ultimate" class="potion-difficulty-btn btn-magic w-64 text-lg font-bold py-3 px-6 rounded-full">終極 (10題)</button>
+                </div>
+                 <button id="potion-collection-btn" class="mt-8 text-yellow-300 hover:text-yellow-200 underline text-lg">查看我的魔藥收藏室</button>
+                 <button onclick="endPractice()" class="mt-4 text-gray-400 hover:text-white">返回練習設定</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="potion-game-screen" class="hidden fixed inset-0 w-full h-full">
+            <div class="absolute top-2 left-2 right-2 p-2 bg-black/20 rounded-lg flex justify-between items-center z-50 text-base md:text-lg">
+                <button id="potion-back-to-menu-btn" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-1 px-3 rounded-lg text-sm">結束遊戲</button>
+                <div id="potion-timer" class="font-mono font-semibold">時間: 00:00</div>
+                <div id="potion-star-rating" class="flex text-2xl md:text-3xl">
+                    <span class="star filled">★</span>
+                    <span class="star filled">★</span>
+                    <span class="star filled">★</span>
+                </div>
+                <div class="font-semibold">
+                    錯誤: <span id="potion-mistakes-count">0</span>
+                </div>
+            </div>
+            
+            <div id="potion-game-board" class="w-full h-full">
+                <!-- Bubbles will be injected here -->
+            </div>
+
+            <svg id="potion-line-svg" class="absolute top-0 left-0 w-full h-full pointer-events-none z-10">
+                <line id="potion-magic-line" class="magic-line" x1="0" y1="0" x2="0" y2="0" style="display: none;"/>
+            </svg>
+
+            <div id="potion-cauldron" class="cauldron z-20">
+                 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="potBodyGradient" cx="50%" cy="40%" r="60%" fx="50%" fy="40%">
+                            <stop offset="0%" style="stop-color:#4a5568" />
+                            <stop offset="100%" style="stop-color:#111827" />
+                        </radialGradient>
+                        <linearGradient id="potRimGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#718096"/>
+                            <stop offset="50%" style="stop-color:#4a5568"/>
+                            <stop offset="100%" style="stop-color:#2d3748"/>
+                        </linearGradient>
+                        <filter id="liquidGlow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <filter id="fireGlow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <linearGradient id="woodGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#a16207" />
+                            <stop offset="100%" style="stop-color:#451a03" />
+                        </linearGradient>
+                    </defs>
+                    <g>
+                        <rect x="65" y="178" width="70" height="14" fill="url(#woodGradient)" stroke="#422006" stroke-width="1.5" rx="5" transform="rotate(-5, 100, 185)"/>
+                        <rect x="60" y="170" width="80" height="14" fill="url(#woodGradient)" stroke="#422006" stroke-width="1.5" rx="5" />
+                        <rect x="70" y="165" width="60" height="14" fill="url(#woodGradient)" stroke="#422006" stroke-width="1.5" rx="5" transform="rotate(10, 100, 172)"/>
+                        <ellipse cx="100" cy="172" rx="20" ry="5" fill="#ef4444" opacity="0.5" filter="url(#fireGlow)">
+                            <animate attributeName="opacity" dur="2s" values="0.4;0.7;0.4" repeatCount="indefinite"/>
+                            <animate attributeName="rx" dur="1.5s" values="20;23;20" repeatCount="indefinite" begin="0.5s"/>
+                        </ellipse>
+                        <g transform="translate(0, -10)">
+                            <path d="M 100 180 C 70 175, 65 140, 100 130 C 135 140, 130 175, 100 180 Z" fill="#ef4444" opacity="0.8">
+                                <animate attributeName="d" dur="1.3s" repeatCount="indefinite" values="M 100 180 C 70 175, 65 140, 100 130 C 135 140, 130 175, 100 180 Z; M 100 180 C 75 177, 70 145, 100 135 C 130 145, 125 177, 100 180 Z; M 100 180 C 70 175, 65 140, 100 130 C 135 140, 130 175, 100 180 Z"/>
+                            </path>
+                            <path d="M 100 180 C 80 175, 80 155, 100 145 C 120 155, 120 175, 100 180 Z" fill="#f97316">
+                                <animate attributeName="d" dur="1s" repeatCount="indefinite" begin="0.2s" values="M 100 180 C 80 175, 80 155, 100 145 C 120 155, 120 175, 100 180 Z; M 100 180 C 85 177, 85 160, 100 150 C 115 160, 115 177, 100 180 Z; M 100 180 C 80 175, 80 155, 100 145 C 120 155, 120 175, 100 180 Z"/>
+                            </path>
+                            <path d="M 100 180 C 90 178, 90 168, 100 160 C 110 168, 110 178, 100 180 Z" fill="#fde047">
+                                <animate attributeName="d" dur="0.8s" repeatCount="indefinite" begin="0.1s" values="M 100 180 C 90 178, 90 168, 100 160 C 110 168, 110 178, 100 180 Z; M 100 180 C 93 179, 93 170, 100 165 C 107 170, 107 179, 100 180 Z; M 100 180 C 90 178, 90 168, 100 160 C 110 168, 110 178, 100 180 Z"/>
+                            </path>
+                        </g>
+                    </g>
+                    <path d="M 30 100 C 30 170, 170 170, 170 100" fill="url(#potBodyGradient)" stroke="#000" stroke-width="2"/>
+                    <path d="M 25 80 Q 100 60, 175 80 L 170 100 Q 100 80, 30 100 Z" fill="url(#potRimGradient)" stroke="#000" stroke-width="1.5"/>
+                    <ellipse cx="100" cy="95" rx="65" ry="20" fill="#a78bfa" filter="url(#liquidGlow)"/>
+                    <circle cx="80" cy="90" r="5" fill="#c4b5fd">
+                        <animate attributeName="cy" dur="1.5s" values="100;85;100" repeatCount="indefinite" />
+                        <animate attributeName="r" dur="1.5s" values="0;5;0" repeatCount="indefinite" />
+                    </circle>
+                    <circle cx="120" cy="95" r="3" fill="#ddd6fe">
+                        <animate attributeName="cy" dur="2s" values="105;90;105" repeatCount="indefinite" begin="0.5s"/>
+                        <animate attributeName="r" dur="2s" values="0;3;0" repeatCount="indefinite" begin="0.5s"/>
+                    </circle>
+                    <circle cx="100" cy="98" r="4" fill="#c4b5fd">
+                        <animate attributeName="cy" dur="1s" values="102;95;102" repeatCount="indefinite" begin="0.2s"/>
+                        <animate attributeName="r" dur="1s" values="0;4;0" repeatCount="indefinite" begin="0.2s"/>
+                    </circle>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Level Complete Modal -->
+        <div id="potion-level-complete-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+            <div class="bg-gray-800 rounded-2xl p-8 text-center border-4 border-yellow-300 shadow-2xl shadow-yellow-300/30 max-w-sm w-full mx-4">
+                <h2 class="text-4xl font-bold text-yellow-300 mb-2 kalam-font">調製成功！</h2>
+                <div id="potion-final-star-rating" class="flex justify-center text-5xl my-4">
+                    <!-- Stars will be injected here -->
+                </div>
+                <p id="potion-completion-time" class="text-lg text-gray-400 mb-4"></p>
+                <div id="potion-reward-section">
+                    <p class="text-lg mb-2">你解鎖了新的魔藥:</p>
+                    <p id="potion-name" class="text-2xl font-bold text-violet-300"></p>
+                    <p id="potion-desc" class="text-gray-400 mt-2 mb-6"></p>
+                </div>
+                <div id="potion-no-reward-section" class="hidden">
+                     <p class="text-lg my-8">表現不錯！但這次沒有解鎖新的魔藥，再接再厲！</p>
+                </div>
+                <button id="potion-replay-btn" class="btn-magic w-full text-lg font-bold py-3 px-6 rounded-full">再次挑戰</button>
+                <button id="potion-main-menu-btn" class="mt-4 text-gray-400 hover:text-white">返回主選單</button>
+            </div>
+        </div>
+        
+        <!-- Collection Modal -->
+        <div id="potion-collection-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+            <div class="bg-gray-800 rounded-2xl p-6 text-center border-4 border-violet-400 shadow-2xl shadow-violet-400/30 w-full max-w-2xl h-full max-h-[90vh] flex flex-col">
+                <h2 class="text-4xl font-bold text-violet-300 mb-4 kalam-font">魔藥收藏室</h2>
+                <div id="potion-collection-grid" class="flex-grow overflow-y-auto pr-2 space-y-4">
+                    <!-- Collection items will be injected here -->
+                </div>
+                <button id="potion-collection-back-btn" class="mt-6 btn-magic w-1/2 mx-auto text-lg font-bold py-2 px-6 rounded-full">返回</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 資料庫 ---
+        let vocabulary = [
+          {
+                word: "apple",
+                definitions: [{
+                    pos: "(n.)",
+                    meaning: "蘋果",
+                    example: {
+                        en: "An apple a day keeps the doctor away.",
+                        zh: "一天一蘋果，醫生遠離我。"
+                    }
+                }],
+                synonyms: ["pome"]
+            },
+            {
+                word: "book",
+                definitions: [
+                    {
+                        pos: "(n.)",
+                        meaning: "書本",
+                        example: { en: "I am reading an interesting book.", zh: "我正在讀一本有趣的書。" }
+                    },
+                    {
+                        pos: "(v.)",
+                        meaning: "預定",
+                        example: { en: "I'd like to book a table for two.", zh: "我想預定一張兩人桌。" }
+                    }
+                ],
+                synonyms: ["volume", "reserve"]
+            },
+            {
+                word: "cat",
+                definitions: [{
+                    pos: "(n.)",
+                    meaning: "貓",
+                    example: {
+                        en: "The cat is sleeping on the sofa.",
+                        zh: "那隻貓正在沙發上睡覺。"
+                    }
+                }],
+                synonyms: ["feline", "kitty"]
+            },
+            {
+                word: "dog",
+                definitions: [{
+                    pos: "(n.)",
+                    meaning: "狗",
+                    example: {
+                        en: "My dog likes to play fetch.",
+                        zh: "我的狗喜歡玩接球遊戲。"
+                    }
+                }],
+                synonyms: ["canine", "puppy"]
+            },
+            {
+                word: "elephant",
+                definitions: [{
+                    pos: "(n.)",
+                    meaning: "大象",
+                    example: {
+                        en: "The elephant is the largest land animal.",
+                        zh: "大象是最大的陸地動物。"
+                    }
+                }],
+                synonyms: ["pachyderm"]
+            }
+        ];
+
+        // --- 全域變數和狀態管理 ---
+        let organizedWords = {};
+        let currentFlashcardUnit = [];
+        let currentCardIndex = 0;
+        let currentWordObject = null;
+        let currentSessionInfo = { letter: null, unit: null, type: 'normal' };
+        let practiceSettings = { type: 'balloon' };
+        let selectedUnits = {};
+        let balloonGameManager = {};
+        let monsterGameManager = {};
+        let synthesisVoice = null;
+        let favoriteFolders = [new Set(), new Set(), new Set(), new Set(), new Set()];
+        let userAddedWordsSet = new Set();
+
+        // --- 頁面導航 & 彈出視窗 ---
+        function showPage(pageId) {
+            document.querySelectorAll('#app > div, .monster-game-screen, #potion-game-wrapper').forEach(page => page.classList.add('hidden'));
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) targetPage.classList.remove('hidden');
+
+            document.body.style.backgroundColor = '#fffde7'; 
+            if (pageId === 'practice-setup-page') document.body.style.backgroundColor = '#ffe5ec'; 
+            else if(pageId === 'practice-quiz-page' || pageId === 'balloon-game-page') document.body.style.backgroundColor = '#e2efff';
+
+            if (pageId === 'learn-main-page') renderMajorUnits();
+            if (pageId === 'favorite-folders-page') renderFavoriteFolders();
+            if (pageId === 'practice-setup-page') {
+                initializePracticeSetup();
+                document.getElementById('fx-container').innerHTML = '';
+            }
+            if (pageId === 'success-page') triggerSuccessPageConfetti();
+        }
+
+        function openModal(modalId) { document.getElementById(modalId).classList.remove('hidden'); }
+        function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
+
+        // --- 搜尋 & 新增/編輯單字邏輯 ---
+        function searchWord() {
+            const input = document.getElementById('search-input');
+            const searchTerm = input.value.trim().toLowerCase();
+            if (!searchTerm) return;
+
+            const foundWord = vocabulary.find(v => v.word.toLowerCase() === searchTerm);
+            if (foundWord) {
+                const letter = foundWord.word[0].toUpperCase();
+                let unitNum, wordIndex;
+                const units = organizedWords[letter] || {};
+                for (const uNum in units) {
+                    const index = units[uNum].findIndex(w => w.word === foundWord.word);
+                    if (index !== -1) {
+                        unitNum = uNum;
+                        wordIndex = index;
+                        break;
+                    }
+                }
+                if (unitNum !== undefined) {
+                    startFlashcardSession(letter, unitNum, wordIndex);
+                }
+            } else {
+                showConfirmModal('無收錄單字', `是否要新增單字 "${searchTerm}" 至資料庫？`, () => openWordForm(null, searchTerm));
+            }
+            input.value = '';
+        }
+
+        function openWordForm(wordData = null, newWord = '') {
+            closeModal('confirm-modal');
+            const container = document.getElementById('definitions-container');
+            container.innerHTML = '';
+            
+            document.getElementById('word-form-title').textContent = wordData ? '編輯單字' : '新增單字';
+            document.getElementById('word-form-en').value = wordData ? wordData.word : newWord;
+            document.getElementById('word-form-synonyms').value = wordData && wordData.synonyms ? wordData.synonyms.join(', ') : '';
+            
+            if (wordData && wordData.definitions) {
+                wordData.definitions.forEach(def => addDefinitionBlock(def));
+            } else {
+                addDefinitionBlock();
+            }
+
+            const saveBtn = document.getElementById('word-form-save-btn');
+            if (wordData) {
+                saveBtn.onclick = () => saveWordChanges(wordData.word);
+            } else {
+                saveBtn.onclick = saveNewWord;
+            }
+
+            openModal('word-form-modal');
+        }
+
+        function openEditWordModal() {
+            openWordForm(currentWordObject);
+        }
+
+        function addDefinitionBlock(definition = {}) {
+            const container = document.getElementById('definitions-container');
+            const block = document.createElement('div');
+            block.className = 'definition-block border-t pt-4 mt-4 relative';
+            const pos = definition.pos ? definition.pos.replace(/[()]/g, '') : '';
+            block.innerHTML = `
+                <button onclick="this.parentElement.remove()" class="absolute top-4 right-0 text-red-400 hover:text-red-600 text-lg"><i class="fas fa-times-circle"></i></button>
+                <div><label class="font-semibold">詞性 <span class="text-red-500">*</span></label><input type="text" class="new-word-pos w-full p-2 border rounded mt-1" placeholder="n., v., adj..." value="${pos}"></div>
+                <div class="mt-2"><label class="font-semibold">中文意思 <span class="text-red-500">*</span></label><input type="text" class="new-word-meaning w-full p-2 border rounded mt-1" placeholder="請輸入中文意思..." value="${definition.meaning || ''}"></div>
+                <div class="mt-2"><label class="font-semibold">英文例句 <span class="text-red-500">*</span></label><textarea class="new-word-ex-en w-full p-2 border rounded mt-1" rows="2" placeholder="請輸入英文例句...">${(definition.example && definition.example.en) || ''}</textarea></div>
+                <div class="mt-2"><label class="font-semibold">中文例句</label><textarea class="new-word-ex-zh w-full p-2 border rounded mt-1" rows="2" placeholder="請輸入中文例句...">${(definition.example && definition.example.zh) || ''}</textarea></div>
+            `;
+            container.appendChild(block);
+        }
+
+        function validateAndGetWordFormData() {
+            const definitionBlocks = document.querySelectorAll('#word-form-modal .definition-block');
+            const synonymsInput = document.getElementById('word-form-synonyms').value.trim();
+            const newDefinitions = [];
+
+            const validPOSRegex = /^[a-zA-Z\.]+(,\s*[a-zA-Z\.]+)*$/;
+            const onlyChineseRegex = /^[\u4e00-\u9fa5\u3000-\u303f\uff00-\uffef]+$/;
+            const validEnglishTextRegex = /^[a-zA-Z0-9\s.,!?'"-]+$/;
+            const validMixedTextRegex = /^[\u4e00-\u9fa5a-zA-Z0-9\s.,!?'"-，。？！‘’“”]+$/;
+            
+            if (synonymsInput && !validEnglishTextRegex.test(synonymsInput.replace(/,/g, ''))) {
+                alert('「同義字」包含無效字元，只允許英文、數字和逗號。');
+                return null;
+            }
+
+            for (let i = 0; i < definitionBlocks.length; i++) {
+                const block = definitionBlocks[i];
+                const posInput = block.querySelector('.new-word-pos').value.trim();
+                const meaningInput = block.querySelector('.new-word-meaning').value.trim();
+                const exEnInput = block.querySelector('.new-word-ex-en').value.trim();
+                const exZhInput = block.querySelector('.new-word-ex-zh').value.trim();
+
+                if (!posInput || !meaningInput || !exEnInput) {
+                    alert(`定義 ${i+1} 中有必填欄位（詞性、中文意思、英文例句）未填寫！`);
+                    return null;
+                }
+                if (!validPOSRegex.test(posInput)) {
+                     alert(`定義 ${i+1} 的「詞性」格式不正確。\n請使用如 "n.", "v." 的縮寫。`);
+                    return null;
+                }
+                if (!onlyChineseRegex.test(meaningInput)) {
+                    alert(`定義 ${i+1} 的「中文意思」只能包含中文字元。`);
+                    return null;
+                }
+                if (!validEnglishTextRegex.test(exEnInput)) {
+                    alert(`定義 ${i+1} 的「英文例句」包含無效字元。`);
+                    return null;
+                }
+                if (exZhInput && !validMixedTextRegex.test(exZhInput)) {
+                    alert(`定義 ${i+1} 的「中文例句」包含無效字元。`);
+                    return null;
+                }
+                
+                newDefinitions.push({
+                    pos: `(${posInput})`,
+                    meaning: meaningInput,
+                    example: { en: exEnInput, zh: exZhInput }
+                });
+            }
+
+            if (newDefinitions.length === 0) {
+                alert('請至少新增一組定義！');
+                return null;
+            }
+            
+            return {
+                definitions: newDefinitions,
+                synonyms: synonymsInput.split(',').map(s => s.trim()).filter(Boolean)
+            };
+        }
+
+        function saveNewWord() {
+            const wordData = validateAndGetWordFormData();
+            if (!wordData) return;
+
+            const newWord = {
+                word: document.getElementById('word-form-en').value,
+                definitions: wordData.definitions,
+                synonyms: wordData.synonyms
+            };
+            
+            vocabulary.push(newWord);
+            userAddedWordsSet.add(newWord.word);
+            organizeAndSortWords();
+            closeModal('word-form-modal');
+            searchWordWithValue(newWord.word);
+        }
+
+        function saveWordChanges(originalWord) {
+            const wordData = validateAndGetWordFormData();
+            if (!wordData) return;
+            
+            const wordIndex = vocabulary.findIndex(w => w.word === originalWord);
+            if (wordIndex === -1) {
+                alert('儲存失敗：找不到原始單字。');
+                return;
+            }
+            
+            vocabulary[wordIndex].definitions = wordData.definitions;
+            vocabulary[wordIndex].synonyms = wordData.synonyms;
+            
+            organizeAndSortWords();
+            closeModal('word-form-modal');
+            displayCard(); // Refresh current card
+        }
+
+        function searchWordWithValue(wordValue) {
+            document.getElementById('search-input').value = wordValue;
+            searchWord();
+        }
+
+        // --- 學習模式邏輯 ---
+        function removeDuplicateWords() {
+            const seenWords = new Set();
+            const uniqueVocabulary = [];
+            // 使用 for...of 迴圈遍歷單字庫
+            for (const wordObj of vocabulary) {
+                // 將單字轉換為小寫以進行不區分大小寫的比對
+                const wordKey = wordObj.word.toLowerCase();
+                // 如果這個單字還沒有見過
+                if (!seenWords.has(wordKey)) {
+                    // 就將它加入到 'seen' 集合和新的單字庫中
+                    seenWords.add(wordKey);
+                    uniqueVocabulary.push(wordObj);
+                }
+            }
+            // 計算移除了多少重複的單字
+            const removedCount = vocabulary.length - uniqueVocabulary.length;
+            if (removedCount > 0) {
+                // 在開發者控制台顯示訊息，方便您確認
+                console.log(`啟動時自動移除了 ${removedCount} 個重複的單字。`);
+            }
+            // 用處理過的、無重複的單字庫替換舊的
+            vocabulary = uniqueVocabulary;
+        }
+
+        function organizeAndSortWords() {
+            const sorted = vocabulary.sort((a, b) => a.word.localeCompare(b.word));
+            sorted.forEach((word, index) => { word.number = index + 1; });
+            const groupedByLetter = sorted.reduce((acc, word) => {
+                const firstLetter = word.word[0].toUpperCase();
+                if (!acc[firstLetter]) acc[firstLetter] = [];
+                acc[firstLetter].push(word);
+                return acc;
+            }, {});
+            
+            organizedWords = {};
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').forEach(letter => {
+                if (groupedByLetter[letter]) {
+                    organizedWords[letter] = {};
+                    const wordsInLetter = groupedByLetter[letter];
+                    for (let i = 0; i < wordsInLetter.length; i += 10) {
+                        organizedWords[letter][Math.floor(i / 10) + 1] = wordsInLetter.slice(i, i + 10);
+                    }
+                }
+            });
+            
+            // Organize favorite words (all folders combined for the main button)
+            const allFavoriteWords = vocabulary.filter(word => favoriteFolders.some(folder => folder.has(word.word)));
+            if (allFavoriteWords.length > 0) {
+                 organizedWords['★'] = { 1: allFavoriteWords }; // Simplified for hasWords check
+            } else {
+                 delete organizedWords['★'];
+            }
+
+            // Organize user-added words
+            const userWords = vocabulary.filter(word => userAddedWordsSet.has(word.word));
+            if (userWords.length > 0) {
+                organizedWords['+'] = {};
+                for (let i = 0; i < userWords.length; i += 10) {
+                    organizedWords['+'][Math.floor(i / 10) + 1] = userWords.slice(i, i + 10);
+                }
+            } else {
+                delete organizedWords['+'];
+            }
+        }
+
+        function renderMajorUnits() {
+            const grid = document.getElementById('major-units-grid');
+            grid.innerHTML = '';
+            const specialUnits = ['★', '+', '🎲'];
+            const allUnits = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').concat(specialUnits);
+
+            allUnits.forEach(unit => {
+                let hasWords = organizedWords[unit];
+                if (unit === '🎲') {
+                    hasWords = vocabulary.length >= 10;
+                }
+                const button = document.createElement('button');
+                let iconHtml = unit;
+                if (unit === '★') iconHtml = `<i class="fas fa-star ${hasWords ? 'text-yellow-400' : ''}"></i>`;
+                if (unit === '+') iconHtml = `<i class="fas fa-plus ${hasWords ? 'text-green-500' : ''}"></i>`;
+                if (unit === '🎲') iconHtml = `<i class="fas fa-dice ${hasWords ? 'text-blue-500' : ''}"></i>`;
+                button.innerHTML = iconHtml;
+                button.className = `p-4 text-xl font-bold rounded-lg shadow transition-transform transform hover:scale-105 ${hasWords ? 'bg-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`;
+                
+                if (hasWords) {
+                    if (unit === '★') {
+                        button.onclick = () => showPage('favorite-folders-page');
+                    } else if (unit === '🎲') {
+                        button.onclick = startRandomSession;
+                    } else {
+                        button.onclick = () => showMinorUnits(unit);
+                    }
+                } else {
+                    // Allow clicking on empty '+' unit to see the page
+                    if(unit === '+') {
+                         button.onclick = () => showMinorUnits(unit);
+                         button.disabled = false;
+                         button.className = `p-4 text-xl font-bold rounded-lg shadow transition-transform transform hover:scale-105 bg-white`;
+                    } else {
+                         button.disabled = true;
+                    }
+                }
+                grid.appendChild(button);
+            });
+        }
+
+        function showMinorUnits(letter, sessionType = 'normal') {
+            const minorUnitGrid = document.getElementById('minor-units-grid');
+            minorUnitGrid.innerHTML = '';
+            
+            const headerRight = document.getElementById('minor-unit-header-right');
+            headerRight.innerHTML = '';
+
+            let title = `單元 ${letter}`;
+             if (letter === '+') {
+                title = '新增的單字';
+            } else if (sessionType.startsWith('favorite-')) {
+                const folderIndex = parseInt(sessionType.split('-')[1]);
+                title = `最愛資料夾 ${folderIndex + 1}`;
+                
+                const clearButton = document.createElement('button');
+                clearButton.className = 'btn bg-red-400 text-white';
+                clearButton.innerHTML = '<i class="fa fa-trash mr-2"></i>清空資料夾';
+                clearButton.onclick = () => confirmClearSingleFolder(folderIndex);
+                headerRight.appendChild(clearButton);
+            }
+            document.getElementById('minor-unit-title').textContent = title;
+            
+            document.getElementById('back-to-major-from-minor').onclick = () => {
+                if (sessionType.startsWith('favorite-')) showPage('favorite-folders-page');
+                else showPage('learn-main-page');
+            };
+
+            const units = organizedWords[letter];
+            if (!units || Object.keys(units).length === 0) {
+                 minorUnitGrid.innerHTML = `<p class="text-center text-gray-500 col-span-full mt-8">這裡還沒有任何單字喔！</p>`;
+            } else {
+                for(const unitNumber in units) {
+                    const unitWords = units[unitNumber];
+                    if (unitWords.length === 0) continue;
+                    const firstWord = unitWords[0];
+                    const lastWord = unitWords[unitWords.length - 1];
+                    const button = document.createElement('button');
+                    button.innerHTML = `<span class="block">${firstWord.number}. ${firstWord.word}</span><span class="block text-gray-400">~</span><span class="block">${lastWord.number}. ${lastWord.word}</span>`;
+                    button.className = 'btn btn-blue text-base text-center p-3 h-28 flex flex-col justify-center items-center leading-tight';
+                    button.onclick = () => startFlashcardSession(letter, unitNumber, 0, sessionType);
+                    minorUnitGrid.appendChild(button);
+                }
+            }
+            showPage('learn-minor-page');
+        }
+
+        function startRandomSession() {
+            if (vocabulary.length < 10) {
+                alert('單字庫中需至少有10個單字才能使用此功能！');
+                return;
+            }
+            const shuffled = [...vocabulary].sort(() => 0.5 - Math.random());
+            const randomWords = shuffled.slice(0, 10);
+            
+            // Create a temporary unit for these words
+            organizedWords['🎲'] = { 1: randomWords };
+            
+            startFlashcardSession('🎲', 1, 0, 'random');
+        }
+
+        function startFlashcardSession(letter, unitNumber, targetIndex = 0, sessionType = 'normal') {
+            currentFlashcardUnit = organizedWords[letter]?.[unitNumber] || [];
+            currentCardIndex = targetIndex;
+            currentSessionInfo = { letter, unit: unitNumber, type: sessionType };
+            
+            const backButton = document.getElementById('back-to-minor-units');
+            if (sessionType === 'random') {
+                backButton.onclick = () => showPage('learn-main-page');
+            } else {
+                backButton.onclick = () => showMinorUnits(letter, sessionType);
+            }
+
+            displayCard();
+            showPage('flashcard-page');
+        }
+
+        function displayCard() {
+            if (!currentFlashcardUnit || currentFlashcardUnit.length === 0) {
+                if (currentSessionInfo.type.startsWith('favorite-')) {
+                    showPage('favorite-folders-page');
+                } else {
+                    showMinorUnits(currentSessionInfo.letter, currentSessionInfo.type);
+                }
+                return;
+            }
+            currentWordObject = currentFlashcardUnit[currentCardIndex];
+            document.getElementById('flashcard-word').textContent = currentWordObject.word;
+            const detailsContainer = document.getElementById('flashcard-details');
+            let detailsHTML = `<h3 class="text-3xl font-bold mb-4 text-center" style="color:var(--color-text-dark);">${currentWordObject.word}</h3>`;
+            currentWordObject.definitions.forEach(def => {
+                detailsHTML += `<div class="mb-4"><p class="text-lg"><strong style="color:var(--color-purple);">${def.pos}</strong> ${def.meaning}</p><p class="mt-1 text-md" style="color:var(--color-text);">${def.example.en}</p><p class="text-md" style="color:var(--color-text);">${def.example.zh}</p></div>`;
+            });
+            if (currentWordObject.synonyms && currentWordObject.synonyms.length > 0) {
+                detailsHTML += `<div class="mt-4"><p class="text-lg"><strong style="color:var(--color-blue);">同義字:</strong> ${currentWordObject.synonyms.join(', ')}</p></div>`;
+            }
+            detailsContainer.innerHTML = detailsHTML;
+            document.getElementById('flashcard-progress').textContent = `${currentCardIndex + 1} / ${currentFlashcardUnit.length}`;
+            document.getElementById('flashcard').classList.remove('is-flipped');
+            updateFavoriteButtonState();
+
+            const headerRight = document.getElementById('flashcard-header-right');
+            headerRight.innerHTML = '';
+            if (currentSessionInfo.type === 'random') {
+                const addAllBtn = document.createElement('button');
+                addAllBtn.className = 'btn btn-blue text-sm';
+                addAllBtn.innerHTML = '<i class="fa fa-star mr-2"></i>一鍵加入最愛';
+                addAllBtn.onclick = () => openAddToFavoriteModal(true); // isBatch = true
+                headerRight.appendChild(addAllBtn);
+            }
+            
+            const deleteBtn = document.getElementById('delete-word-btn');
+            if (userAddedWordsSet.has(currentWordObject.word)) {
+                deleteBtn.classList.remove('hidden');
+            } else {
+                deleteBtn.classList.add('hidden');
+            }
+        }
+
+        // --- 最愛單字相關 ---
+
+        function renderFavoriteFolders() {
+            const grid = document.getElementById('favorite-folders-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const count = favoriteFolders[i].size;
+                const folderButton = document.createElement('button');
+                folderButton.className = 'btn btn-pink text-lg h-32 flex flex-col justify-center items-center';
+                folderButton.innerHTML = `<span><i class="fas fa-folder mr-2"></i>資料夾 ${i+1}</span><span class="text-sm mt-2">(${count} 個單字)</span>`;
+                folderButton.onclick = () => showFavoriteFolderContents(i);
+                grid.appendChild(folderButton);
+            }
+        }
+
+        function showFavoriteFolderContents(folderIndex) {
+            const folderWords = vocabulary.filter(w => favoriteFolders[folderIndex].has(w.word));
+            const tempUnitName = `fav-${folderIndex}`;
+            organizedWords[tempUnitName] = {};
+            if (folderWords.length > 0) {
+                for (let i = 0; i < folderWords.length; i += 10) {
+                     organizedWords[tempUnitName][Math.floor(i / 10) + 1] = folderWords.slice(i, i + 10);
+                }
+            }
+            showMinorUnits(tempUnitName, `favorite-${folderIndex}`);
+        }
+
+        function handleFavoriteClick() {
+            const wordToHandle = currentWordObject.word;
+            const isFav = favoriteFolders.some(folder => folder.has(wordToHandle));
+            if (isFav) {
+                favoriteFolders.forEach(folder => folder.delete(wordToHandle));
+                organizeAndSortWords();
+                updateFavoriteButtonState();
+            } else {
+                openAddToFavoriteModal(false);
+            }
+        }
+
+        function openAddToFavoriteModal(isBatch = false) {
+            const container = document.getElementById('favorite-modal-folders');
+            container.innerHTML = '';
+             for (let i = 0; i < 5; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-blue';
+                btn.textContent = `資料夾 ${i+1}`;
+                if (isBatch) {
+                    btn.onclick = () => addAllCurrentWordsToFavorite(i);
+                } else {
+                    btn.onclick = () => addToFavorite(i);
+                }
+                container.appendChild(btn);
+            }
+            openModal('add-to-favorite-modal');
+        }
+
+        function addToFavorite(folderIndex) {
+            const wordToAdd = currentWordObject.word;
+            if (favoriteFolders[folderIndex].size >= 500) {
+                alert(`資料夾 ${folderIndex+1} 已滿 (上限500)！`);
+                return;
+            }
+            favoriteFolders.forEach(folder => folder.delete(wordToAdd));
+            favoriteFolders[folderIndex].add(wordToAdd);
+            
+            organizeAndSortWords();
+            updateFavoriteButtonState();
+            closeModal('add-to-favorite-modal');
+        }
+
+        function addAllCurrentWordsToFavorite(folderIndex) {
+            if (!currentFlashcardUnit || currentFlashcardUnit.length === 0) return;
+            
+            let addedCount = 0;
+            let alreadyInFolder = 0;
+            const totalWords = currentFlashcardUnit.length;
+
+            currentFlashcardUnit.forEach(wordObj => {
+                const wordToAdd = wordObj.word;
+                
+                if (favoriteFolders[folderIndex].has(wordToAdd)) {
+                    alreadyInFolder++;
+                    return; 
+                }
+
+                if (favoriteFolders[folderIndex].size >= 500) {
+                    return; 
+                }
+                
+                favoriteFolders.forEach((folder, idx) => {
+                    if (idx !== folderIndex) {
+                        folder.delete(wordToAdd);
+                    }
+                });
+                
+                favoriteFolders[folderIndex].add(wordToAdd);
+                addedCount++;
+            });
+            
+            let alertMessage = '';
+            if (addedCount > 0) {
+                alertMessage += `成功加入 ${addedCount} 個新單字至資料夾 ${folderIndex + 1}！\n`;
+            }
+            if (alreadyInFolder > 0) {
+                alertMessage += `${alreadyInFolder} 個單字已存在於該資料夾。\n`;
+            }
+            if (addedCount + alreadyInFolder < totalWords) {
+                 alertMessage += `部分單字因資料夾已滿 (上限500) 而未加入。`;
+            }
+            
+            if(alertMessage.trim() === '') {
+                alertMessage = "沒有單字被加入。";
+            }
+
+            alert(alertMessage.trim());
+            
+            organizeAndSortWords();
+            updateFavoriteButtonState();
+            closeModal('add-to-favorite-modal');
+        }
+
+        function confirmClearSingleFolder(folderIndex) {
+            showConfirmModal(`清空資料夾 ${folderIndex + 1}`, '確定要清空此最愛資料夾嗎？此操作無法復原。', () => clearSingleFolder(folderIndex));
+        }
+
+        function clearSingleFolder(folderIndex) {
+            favoriteFolders[folderIndex].clear();
+            organizeAndSortWords();
+            closeModal('confirm-modal');
+            showMinorUnits(`fav-${folderIndex}`, `favorite-${folderIndex}`);
+        }
+
+        function updateFavoriteButtonState() {
+            const wordData = currentWordObject;
+            if (!wordData) return;
+            const favBtn = document.getElementById('favorite-btn');
+            const isFav = favoriteFolders.some(folder => folder.has(wordData.word));
+            if (isFav) {
+                favBtn.classList.add('favorited', 'text-yellow-400');
+                favBtn.classList.remove('text-gray-400');
+            } else {
+                favBtn.classList.remove('favorited', 'text-yellow-400');
+                favBtn.classList.add('text-gray-400');
+            }
+        }
+
+        // --- 刪除單字 ---
+        function confirmDeleteWord() {
+            const wordToDelete = currentWordObject.word;
+            showConfirmModal('刪除單字', `確定要永久刪除單字 "${wordToDelete}" 嗎？`, () => deleteWord(wordToDelete));
+        }
+
+        function deleteWord(wordToDelete) {
+            vocabulary = vocabulary.filter(w => w.word !== wordToDelete);
+            userAddedWordsSet.delete(wordToDelete);
+            favoriteFolders.forEach(folder => folder.delete(wordToDelete));
+            
+            organizeAndSortWords();
+            
+            currentFlashcardUnit = currentFlashcardUnit.filter(w => w.word !== wordToDelete);
+            if (currentCardIndex >= currentFlashcardUnit.length) {
+                currentCardIndex = Math.max(0, currentFlashcardUnit.length - 1);
+            }
+            
+            closeModal('confirm-modal');
+            displayCard();
+        }
+
+        function showConfirmModal(title, text, onYes) {
+            document.getElementById('confirm-modal-title').textContent = title;
+            document.getElementById('confirm-modal-text').textContent = text;
+            document.getElementById('confirm-modal-yes').onclick = onYes;
+            openModal('confirm-modal');
+        }
+
+
+        function playPronunciation() {
+            const utterance = new SpeechSynthesisUtterance(document.getElementById('flashcard-word').textContent);
+            if (synthesisVoice) {
+                utterance.voice = synthesisVoice;
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+            }
+            speechSynthesis.speak(utterance);
+        }
+        function nextCard() { currentCardIndex = (currentCardIndex + 1) % currentFlashcardUnit.length; displayCard(); }
+        function prevCard() { currentCardIndex = (currentCardIndex - 1 + currentFlashcardUnit.length) % currentFlashcardUnit.length; displayCard(); }
+
+        // --- 練習模式邏輯 ---
+        function initializePracticeSetup() {
+            renderUnitSelection();
+        }
+
+        function openUnitSelectionModal() { openModal('unit-selection-modal'); }
+        function confirmUnitSelection() {
+            selectedUnits = {};
+            document.querySelectorAll('.major-unit-checkbox:checked').forEach(majorCb => { selectedUnits[majorCb.dataset.letter] = 'all'; });
+            document.querySelectorAll('.minor-unit-checkbox:checked').forEach(minorCb => {
+                const { letter, unit } = minorCb.dataset;
+                if (selectedUnits[letter] !== 'all') { if (!selectedUnits[letter]) selectedUnits[letter] = []; selectedUnits[letter].push(unit); }
+            });
+            closeModal('unit-selection-modal');
+        }
+
+        function renderUnitSelection() {
+            const container = document.getElementById('unit-selection-container');
+            container.innerHTML = '';
+            
+            const renderGroup = (letter, isFavorite = false) => {
+                let unitData = organizedWords[letter];
+                if (isFavorite) {
+                    const favWords = vocabulary.filter(w => favoriteFolders.some(f => f.has(w.word)));
+                    if (favWords.length > 0) {
+                        unitData = { 1: favWords }; // Group all favs into one selectable block
+                    } else {
+                        unitData = null;
+                    }
+                }
+                const hasWords = unitData && Object.keys(unitData).length > 0;
+
+                const unitGroup = document.createElement('div');
+                unitGroup.className = 'unit-group border-b pb-2 mb-2';
+                
+                const majorLabel = document.createElement('label');
+                majorLabel.className = `font-bold text-lg flex items-center ${hasWords ? 'cursor-pointer' : 'text-gray-400 cursor-not-allowed'}`;
+                
+                const majorCheckbox = document.createElement('input');
+                majorCheckbox.type = 'checkbox';
+                majorCheckbox.className = 'major-unit-checkbox mr-2 h-5 w-5';
+                majorCheckbox.dataset.letter = letter;
+                majorCheckbox.disabled = !hasWords;
+                
+                if (hasWords) {
+                    majorCheckbox.onchange = (e) => {
+                        unitGroup.querySelectorAll('.minor-unit-checkbox').forEach(cb => cb.checked = e.target.checked);
+                    };
+                }
+                
+                majorLabel.appendChild(majorCheckbox);
+                majorLabel.append(isFavorite ? `★ 最愛單字 (全選)` : `單元 ${letter} (全選)`);
+                unitGroup.appendChild(majorLabel);
+                
+                if (hasWords && !isFavorite) {
+                    const minorContainer = document.createElement('div');
+                    minorContainer.className = 'minor-units-container pl-8 mt-2 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2';
+                    Object.keys(unitData).forEach(unitNum => {
+                        const unitWords = unitData[unitNum];
+                        if (!unitWords || unitWords.length === 0) return;
+                        const firstWord = unitWords[0];
+                        const lastWord = unitWords[unitWords.length - 1];
+
+                        const minorLabel = document.createElement('label');
+                        minorLabel.className = 'flex items-center cursor-pointer text-sm';
+                        const minorCheckbox = document.createElement('input');
+                        minorCheckbox.type = 'checkbox';
+                        minorCheckbox.className = 'minor-unit-checkbox mr-2 h-4 w-4 flex-shrink-0';
+                        minorCheckbox.dataset.letter = letter;
+                        minorCheckbox.dataset.unit = unitNum;
+                        minorCheckbox.onchange = () => {
+                            const allMinorChecked = Array.from(unitGroup.querySelectorAll('.minor-unit-checkbox:not(:disabled)')).every(cb => cb.checked);
+                            majorCheckbox.checked = allMinorChecked;
+                        };
+                        const textSpan = document.createElement('span');
+                        textSpan.textContent = `${firstWord.number}. ${firstWord.word} ~ ${lastWord.number}. ${lastWord.word}`;
+                        minorLabel.appendChild(minorCheckbox);
+                        minorLabel.appendChild(textSpan);
+                        minorContainer.appendChild(minorLabel);
+                    });
+                    unitGroup.appendChild(minorContainer);
+                }
+                return unitGroup;
+            };
+
+            container.appendChild(renderGroup('★', true));
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').forEach(letter => {
+                if (organizedWords[letter]) container.appendChild(renderGroup(letter));
+            });
+             if (organizedWords['+']) container.appendChild(renderGroup('+'));
+
+        }
+
+        function getWordPool() {
+            let wordPool = [];
+            if (Object.keys(selectedUnits).length === 0) {
+                wordPool = [...vocabulary];
+            } else {
+                for (const letter in selectedUnits) {
+                    if (letter === '★') {
+                        const favWords = vocabulary.filter(w => favoriteFolders.some(f => f.has(w.word)));
+                        wordPool.push(...favWords);
+                        continue;
+                    }
+                    if(!organizedWords[letter]) continue;
+                    if (selectedUnits[letter] === 'all') {
+                        for (const unitNum in organizedWords[letter]) {
+                            wordPool.push(...organizedWords[letter][unitNum]);
+                        }
+                    } else {
+                        selectedUnits[letter].forEach(unitNum => {
+                            if(organizedWords[letter] && organizedWords[letter][unitNum]) {
+                                wordPool.push(...organizedWords[letter][unitNum]);
+                            }
+                        });
+                    }
+                }
+                wordPool = [...new Map(wordPool.map(item => [item.word, item])).values()];
+            }
+            return wordPool;
+        }
+
+        function startPractice() {
+            practiceSettings.type = document.getElementById('quiz-type').value;
+            const wordPool = getWordPool();
+
+            if (practiceSettings.type === 'balloon') {
+                if (wordPool.length < 4) {
+                    alert('單字量不足4個，無法開始射氣球遊戲！請選擇更多單元或新增單字。');
+                    return;
+                }
+                showPage('balloon-game-page');
+                initBalloonGame(wordPool);
+            } else if (practiceSettings.type === 'monster-challenge') {
+                if (wordPool.length < 1) {
+                    alert('請至少選擇一個有單字的單元！');
+                    return;
+                }
+                monsterGameManager.init(wordPool);
+                switchScreen('practice-setup-page', 'monster-setup-page', true);
+
+            } else if (practiceSettings.type === 'potion') {
+                 if (wordPool.length < 3) {
+                    alert('單字量不足3個，無法開始魔藥煉製遊戲！請選擇更多單元或新增單字。');
+                    return;
+                }
+                showPage('potion-game-wrapper');
+                potionGame.init(wordPool);
+            }
+        }
+
+        function endPractice() {
+            if (balloonGameManager.stop) balloonGameManager.stop();
+            if (monsterGameManager.stop) monsterGameManager.stop();
+            if (window.potionGame && window.potionGame.end) window.potionGame.end();
+            showPage('practice-setup-page');
+        }
+
+        // --- 射氣球遊戲邏輯 ---
+        function initBalloonGame(wordPool) {
+            const canvas = document.getElementById('balloon-game-canvas');
+            const ctx = canvas.getContext('2d');
+            const ui = {
+                score: document.getElementById('balloon-score'),
+                timer: document.getElementById('balloon-timer'),
+                question: document.getElementById('balloon-question'),
+                overlay: document.getElementById('balloon-game-overlay')
+            };
+            let state = {
+                score: 0,
+                timeLeft: 30,
+                gameStatus: 'idle',
+                balloons: [],
+                currentQuestion: null,
+                animationFrameId: null,
+                timerIntervalId: null,
+                availableWords: [...wordPool]
+            };
+
+            function setOverlay(status, score) {
+                ui.overlay.classList.remove('hidden');
+                ui.overlay.classList.add('flex');
+                if (status === 'idle') {
+                    ui.overlay.innerHTML = `<h2 class="text-4xl font-bold mb-4">射氣球遊戲</h2><p class="text-xl mb-6">點擊正確的英文單字氣球！</p><div class="mb-6"><h3 class="text-2xl font-bold mb-3">選擇時間</h3><div class="flex gap-4"><button onclick="balloonGameManager.start(30)" class="btn bg-pink-400 text-white text-xl px-8 py-3">30秒</button><button onclick="balloonGameManager.start(60)" class="btn bg-pink-400 text-white text-xl px-8 py-3">60秒</button><button onclick="balloonGameManager.start(90)" class="btn bg-pink-400 text-white text-xl px-8 py-3">90秒</button></div></div>`;
+                } else if (status === 'ended') {
+                    ui.overlay.innerHTML = `<h2 class="text-4xl font-bold mb-4">遊戲結束！</h2><p class="text-3xl mb-8">你的分數: <span class="text-yellow-300">${score}</span></p><button onclick="showPage('practice-setup-page')" class="btn bg-pink-400 text-white text-xl px-8 py-3">返回</button>`;
+                } else if (status === 'all-words-done') {
+                    ui.overlay.innerHTML = `<h2 class="text-4xl font-bold mb-4">太厲害了！</h2><p class="text-2xl mb-8">你已完成所有單字！<br>最終分數: <span class="text-yellow-300">${score}</span></p><button onclick="endPractice()" class="btn bg-pink-400 text-white text-xl px-8 py-3">返回設定</button>`;
+                }
+            }
+
+            function nextQuestion() {
+                if (state.availableWords.length === 0) {
+                    state.gameStatus = 'ended';
+                    setOverlay('all-words-done', state.score);
+                    stopGame();
+                    return;
+                }
+                let questionPool = [...wordPool];
+                const correctWord = state.availableWords.splice(Math.floor(Math.random() * state.availableWords.length), 1)[0];
+                state.currentQuestion = {
+                    english: correctWord.word,
+                    chinese: correctWord.definitions[0].meaning
+                };
+                ui.question.textContent = state.currentQuestion.chinese;
+                let options = [state.currentQuestion.english];
+                questionPool = questionPool.filter(w => w.word !== state.currentQuestion.english);
+                while (options.length < 4 && questionPool.length > 0) {
+                    options.push(questionPool.splice(Math.floor(Math.random() * questionPool.length), 1)[0].word);
+                }
+
+                const tempBalloons = [];
+                const radius = canvas.width / 12;
+                const sortedOptions = options.sort(() => 0.5 - Math.random());
+
+                for (const word of sortedOptions) {
+                    let x, overlaps;
+                    let attempts = 0;
+                    do {
+                        overlaps = false;
+                        x = Math.random() * (canvas.width - radius * 2) + radius;
+
+                        for (const existingBalloon of tempBalloons) {
+                            // 檢查水平重疊，確保氣球之間有間隙
+                            if (Math.abs(x - existingBalloon.x) < radius * 2) { 
+                                overlaps = true;
+                                break;
+                            }
+                        }
+                        attempts++;
+                    } while (overlaps && attempts < 100); // 安全機制，避免無限迴圈
+
+                    tempBalloons.push({
+                        x: x,
+                        y: canvas.height + radius + Math.random() * 150, // 隨機化起始 Y 座標
+                        radius: radius,
+                        speed: 1 + Math.random(),
+                        text: word,
+                        color: `hsl(${Math.random() * 360}, 80%, 70%)`
+                    });
+                }
+                state.balloons = tempBalloons;
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                state.balloons.forEach(b => {
+                    // 氣球繩子
+                    ctx.strokeStyle = '#555';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(b.x, b.y + b.radius * 0.9); // 從氣球下方開始
+                    ctx.quadraticCurveTo(b.x + (Math.sin(b.y / 20) * 10), b.y + b.radius + 30, b.x, b.y + b.radius + 60);
+                    ctx.stroke();
+
+                    // 氣球主體
+                    ctx.fillStyle = b.color;
+                    ctx.beginPath();
+                    // 讓氣球稍微橢圓一點
+                    ctx.ellipse(b.x, b.y, b.radius * 0.9, b.radius, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 氣球反光
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                    ctx.beginPath();
+                    ctx.ellipse(b.x - b.radius * 0.25, b.y - b.radius * 0.3, b.radius * 0.2, b.radius * 0.4, -Math.PI / 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 氣球繩結
+                    ctx.fillStyle = b.color;
+                    ctx.filter = 'brightness(80%)'; // 讓繩結顏色深一點
+                    ctx.beginPath();
+                    ctx.moveTo(b.x - b.radius * 0.15, b.y + b.radius * 0.95);
+                    ctx.lineTo(b.x + b.radius * 0.15, b.y + b.radius * 0.95);
+                    ctx.lineTo(b.x, b.y + b.radius * 1.1);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.filter = 'none'; // 重置濾鏡
+                    
+                    // 氣球上的文字
+                    ctx.fillStyle = 'black';
+                    const fontSize = b.radius * 0.4;
+                    ctx.font = `bold ${fontSize}px 'Inter', sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(b.text, b.x, b.y);
+                });
+            }
+
+            function update() {
+                // 從後往前遍歷，方便安全地移除元素
+                for (let i = state.balloons.length - 1; i >= 0; i--) {
+                    const b = state.balloons[i];
+                    b.y -= b.speed;
+
+                    // 如果氣球碰到或超過畫面上緣
+                    if (b.y - b.radius <= 0) {
+                        // 檢查是否為正確答案的氣球
+                        if (b.text === state.currentQuestion.english) {
+                            // 正確答案的氣球飛走了，算答錯
+                            state.score -= 5; // 因錯過正確答案而扣分
+                            ui.score.textContent = state.score;
+                            
+                            // 在氣球撞擊的頂部位置觸發爆炸特效
+                            const rect = canvas.getBoundingClientRect();
+                            const screenX = rect.left + (b.x / canvas.width) * rect.width;
+                            const screenY = rect.top;
+                            triggerExplosion(screenX, screenY);
+                            
+                            // 直接換下一題並結束這次 update
+                            nextQuestion();
+                            return; 
+                        } else {
+                            // 錯誤答案的氣球飛走了，就讓它消失
+                            state.balloons.splice(i, 1);
+                        }
+                    }
+                }
+            }
+
+            function gameLoop() {
+                update();
+                draw();
+                if (state.gameStatus === 'running') state.animationFrameId = requestAnimationFrame(gameLoop);
+            }
+
+            function handleCanvasClick(event) {
+                if (state.gameStatus !== 'running') return;
+                const rect = canvas.getBoundingClientRect();
+                const x = (event.clientX - rect.left) * (canvas.width / rect.width);
+                const y = (event.clientY - rect.top) * (canvas.height / rect.height);
+                for (let i = state.balloons.length - 1; i >= 0; i--) {
+                    const b = state.balloons[i];
+                    if (Math.sqrt((x - b.x)**2 + (y - b.y)**2) < b.radius) {
+                        if (b.text === state.currentQuestion.english) {
+                            state.score += 10;
+                            triggerClickConfetti(event.clientX, event.clientY);
+                        } else {
+                            state.score -= 5;
+                            triggerExplosion(event.clientX, event.clientY);
+                        }
+                        ui.score.textContent = state.score;
+                        nextQuestion();
+                        break;
+                    }
+                }
+            }
+
+            function startGame(time) {
+                state.timeLeft = time;
+                state.gameStatus = 'running';
+                state.score = 0;
+                ui.score.textContent = '0';
+                state.availableWords = [...wordPool];
+                ui.overlay.classList.add('hidden');
+                ui.timer.textContent = state.timeLeft;
+                state.timerIntervalId = setInterval(() => {
+                    state.timeLeft--;
+                    ui.timer.textContent = state.timeLeft;
+                    if (state.timeLeft <= 0) {
+                        stopGame();
+                        state.gameStatus = 'ended';
+                        setOverlay('ended', state.score);
+                    }
+                }, 1000);
+                nextQuestion();
+                gameLoop();
+            }
+
+            function stopGame() {
+                clearInterval(state.timerIntervalId);
+                cancelAnimationFrame(state.animationFrameId);
+            }
+            balloonGameManager.start = startGame;
+            balloonGameManager.stop = stopGame;
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            setOverlay('idle');
+            canvas.onclick = handleCanvasClick;
+        }
+
+        // --- 怪物遊戲專用畫面切換函式 ---
+        function switchScreen(hideId, showId, isFromPracticeSetup = false) {
+             const hide = document.getElementById(hideId);
+             const show = document.getElementById(showId);
+             if (!hide || !show) return;
+
+             if(isFromPracticeSetup) {
+                 // For practice setup, we just need to show the monster setup, not hide anything from the main app
+                document.querySelectorAll('#app > div, #success-page, #failure-page').forEach(page => page.classList.add('hidden'));
+                show.classList.remove('hidden');
+                setTimeout(() => show.classList.remove('opacity-0'), 50); // Fade in
+             } else {
+                hide.classList.add('opacity-0');
+                setTimeout(() => {
+                    hide.classList.add('hidden');
+                    show.classList.remove('hidden');
+                    setTimeout(() => show.classList.remove('opacity-0'), 50);
+                }, 500);
+             }
+        }
+
+
+        // --- 怪物遊戲邏輯 ---
+        (function() {
+            const dom = {
+                setup: document.getElementById('monster-setup-page'),
+                game: document.getElementById('monster-game-page'),
+                win: document.getElementById('monster-win-page'),
+                lose: document.getElementById('monster-lose-page'),
+                hpSelect: document.getElementById('monster-hp-select'),
+                timeSelect: document.getElementById('monster-time-select'),
+                startBtn: document.getElementById('monster-start-btn'),
+                backBtn: document.getElementById('monster-back-btn'),
+                monsterDisplay: document.getElementById('monster-display'),
+                hpText: document.getElementById('monster-hp-text'),
+                hpBarFill: document.getElementById('monster-hp-bar-fill'),
+                timerDisplay: document.getElementById('monster-timer-display'),
+                wordHint: document.getElementById('monster-word-hint'),
+                wordStructure: document.getElementById('monster-word-structure'),
+                answerInput: document.getElementById('monster-answer-input'),
+                feedback: document.getElementById('monster-feedback-display'),
+                skipBtn: document.getElementById('monster-skip-btn'),
+                endGameBtn: document.getElementById('monster-end-game-btn')
+            };
+            const svgs = {
+                idle: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><g><path d="M135.2,8.8c-7.2-2-14.6,0.3-20.1,5.8l-12,12l-12.8,12.8c-8.8,8.8-9.6,22.7-2,30.4l14.1,14.1 c7.7,7.7,21.6,6.8,30.4-2l12.8-12.8l12-12c5.5-5.5,7.8-12.9,5.8-20.1L135.2,8.8z" fill="#A0522D"/><circle cx="118" cy="27" r="5" fill="#8B4513"/><circle cx="150" cy="50" r="5" fill="#8B4513"/><circle cx="130" cy="65" r="5" fill="#8B4513"/><path d="M125,100 C140,80 130,50 120,45" stroke="#68D391" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M50,190 C20,100, 180,100, 150,190 Z" fill="#48BB78"/><path d="M70,120 C40,70 160,70 130,120 L70,120 Z" fill="#48BB78"/><path d="M60,80 L40,40 L70,70 Z" fill="#68D391"/><path d="M140,80 L160,40 L130,70 Z" fill="#68D391"/><circle cx="80" cy="95" r="8" fill="#FEE2E2"/><circle cx="120" cy="95" r="8" fill="#FEE2E2"/><path d="M90,115 C95,110 105,110 110,115" stroke="#4A5568" stroke-width="3" fill="none"/><path d="M85,115 v5" stroke="#4A5568" stroke-width="3" stroke-linecap="round"/><path d="M115,115 v5" stroke="#4A5568" stroke-width="3" stroke-linecap="round"/></g></svg>`,
+                hurt: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><g><path d="M135.2,8.8c-7.2-2-14.6,0.3-20.1,5.8l-12,12l-12.8,12.8c-8.8,8.8-9.6,22.7-2,30.4l14.1,14.1 c7.7,7.7,21.6,6.8,30.4-2l12.8-12.8l12-12c5.5-5.5,7.8-12.9,5.8-20.1L135.2,8.8z" fill="#A0522D"/><circle cx="118" cy="27" r="5" fill="#8B4513"/><circle cx="150" cy="50" r="5" fill="#8B4513"/><circle cx="130" cy="65" r="5" fill="#8B4513"/><path d="M125,100 C140,80 130,50 120,45" stroke="#68D391" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M50,190 C20,100, 180,100, 150,190 Z" fill="#48BB78"/><path d="M70,120 C40,70 160,70 130,120 L70,120 Z" fill="#48BB78"/><path d="M60,80 L40,40 L70,70 Z" fill="#68D391"/><path d="M140,80 L160,40 L130,70 Z" fill="#68D391"/><path d="M72 88 L88 102 M88 88 L72 102" stroke="#4A5568" stroke-width="4" stroke-linecap="round"/><path d="M112 88 L128 102 M128 88 L112 102" stroke="#4A5568" stroke-width="4" stroke-linecap="round"/><path d="M90,120 Q100,110 110,120" stroke="#4A5568" stroke-width="3" fill="none" stroke-linecap="round"/></g></svg>`,
+                happy: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><g><path d="M135.2,8.8c-7.2-2-14.6,0.3-20.1,5.8l-12,12l-12.8,12.8c-8.8,8.8-9.6,22.7-2,30.4l14.1,14.1 c7.7,7.7,21.6,6.8,30.4-2l12.8-12.8l12-12c5.5-5.5,7.8-12.9,5.8-20.1L135.2,8.8z" fill="#A0522D"/><circle cx="118" cy="27" r="5" fill="#8B4513"/><circle cx="150" cy="50" r="5" fill="#8B4513"/><circle cx="130" cy="65" r="5" fill="#8B4513"/><path d="M125,100 C140,80 130,50 120,45" stroke="#68D391" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M50,190 C20,100, 180,100, 150,190 Z" fill="#48BB78"/><path d="M70,120 C40,70 160,70 130,120 L70,120 Z" fill="#48BB78"/><path d="M60,80 L40,40 L70,70 Z" fill="#68D391"/><path d="M140,80 L160,40 L130,70 Z" fill="#68D391"/><path d="M75 90 C 80 80, 90 80, 95 90" stroke="#4A5568" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M105 90 C 110 80, 120 80, 125 90" stroke="#4A5568" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M85,110 Q100,130 115,110" fill="#4A5568"/></g></svg>`
+            };
+            let state = {
+                wordPool: [],
+                maxHP: 100,
+                currentHP: 100,
+                timeLeft: 75,
+                currentWord: null,
+                timerInterval: null,
+                animationInterval: null,
+                usedWordIndices: new Set()
+            };
+            const idleAnimations = ['monster-bob-animation', 'monster-tilt-animation', 'monster-hop-animation'];
+
+            function startIdleAnimation() {
+                stopIdleAnimation();
+                const setRandomAnimation = () => {
+                    dom.monsterDisplay.classList.remove(...idleAnimations);
+                    dom.monsterDisplay.classList.add(idleAnimations[Math.floor(Math.random() * idleAnimations.length)]);
+                };
+                setRandomAnimation();
+                state.animationInterval = setInterval(setRandomAnimation, 4000);
+            }
+
+            function stopIdleAnimation() {
+                clearInterval(state.animationInterval);
+                state.animationInterval = null;
+                dom.monsterDisplay.classList.remove(...idleAnimations);
+            }
+
+            function startTimer() {
+                state.timerInterval = setInterval(() => {
+                    state.timeLeft--;
+                    dom.timerDisplay.textContent = state.timeLeft;
+                    if (state.timeLeft <= 0) endGame(false);
+                }, 1000);
+            }
+
+            function nextWord() {
+                if (state.usedWordIndices.size === state.wordPool.length) {
+                    state.usedWordIndices.clear();
+                }
+                let newIndex;
+                do {
+                    newIndex = Math.floor(Math.random() * state.wordPool.length);
+                } while (state.usedWordIndices.has(newIndex));
+                state.usedWordIndices.add(newIndex);
+                state.currentWord = state.wordPool[newIndex];
+                dom.wordHint.textContent = `${state.currentWord.definitions[0].meaning} (${state.currentWord.definitions[0].pos})`;
+                const word = state.currentWord.word;
+                dom.wordStructure.textContent = word.length > 1 ? `${word[0]} ${'_ '.repeat(word.length - 2)} ${word.slice(-1)}` : word;
+                dom.answerInput.value = '';
+                dom.feedback.textContent = '';
+            }
+
+            function checkAnswer() {
+                if (dom.answerInput.value.trim().toLowerCase() === state.currentWord.word) {
+                    dom.answerInput.disabled = true;
+                    const damage = [0, 5, 10, 15, 20, 50][Math.floor(Math.random() * 6)];
+                    state.currentHP = Math.max(0, state.currentHP - damage);
+                    updateHPDisplay();
+                    stopIdleAnimation();
+                    dom.monsterDisplay.innerHTML = svgs.hurt;
+                    dom.monsterDisplay.classList.add('shake-animation');
+                    setTimeout(() => {
+                        dom.monsterDisplay.classList.remove('shake-animation');
+                        if (state.currentHP <= 0) {
+                            endGame(true);
+                        } else {
+                            dom.monsterDisplay.innerHTML = svgs.idle;
+                            startIdleAnimation();
+                            nextWord();
+                            dom.answerInput.disabled = false;
+                            dom.answerInput.focus();
+                        }
+                    }, 800);
+                } else {
+                    dom.feedback.textContent = '[錯囉 再試一次]';
+                    dom.answerInput.value = '';
+                    setTimeout(() => {
+                        dom.feedback.textContent = '';
+                    }, 2000);
+                }
+            }
+
+            function skipQuestion() {
+                dom.answerInput.disabled = true;
+                dom.skipBtn.disabled = true;
+                dom.endGameBtn.disabled = true;
+                state.currentHP = Math.min(state.maxHP, state.currentHP + Math.floor(Math.random() * 6) + 5);
+                updateHPDisplay();
+                stopIdleAnimation();
+                dom.monsterDisplay.innerHTML = svgs.happy;
+                setTimeout(() => {
+                    dom.monsterDisplay.innerHTML = svgs.idle;
+                    startIdleAnimation();
+                    nextWord();
+                    dom.answerInput.disabled = false;
+                    dom.skipBtn.disabled = false;
+                    dom.endGameBtn.disabled = false;
+                    dom.answerInput.focus();
+                }, 1200);
+            }
+
+            function updateHPDisplay() {
+                dom.hpText.textContent = `HP: ${state.currentHP}/${state.maxHP}`;
+                dom.hpBarFill.style.width = `${(state.currentHP / state.maxHP) * 100}%`;
+            }
+            
+            function stopGameLogic() {
+                clearInterval(state.timerInterval);
+                stopIdleAnimation();
+                state.timerInterval = null;
+            }
+
+            function endGame(isWin) {
+                stopGameLogic();
+                if (isWin) {
+                    switchScreen('monster-game-page', 'monster-win-page');
+                    createConfetti();
+                } else {
+                    switchScreen('monster-game-page', 'monster-lose-page');
+                }
+            }
+
+            function createConfetti() {
+                const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800'];
+                for (let i = 0; i < 100; i++) {
+                    const c = document.createElement('div');
+                    c.classList.add('confetti');
+                    c.style.left = `${Math.random()*100}vw`;
+                    c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    c.style.animationDelay = `${Math.random()*3}s`;
+                    dom.win.appendChild(c);
+                }
+            }
+            
+            monsterGameManager.init = (wordPool) => {
+                state.wordPool = wordPool;
+            };
+            monsterGameManager.start = () => {
+                state.maxHP = parseInt(dom.hpSelect.value);
+                state.currentHP = state.maxHP;
+                state.timeLeft = parseInt(dom.timeSelect.value);
+                state.usedWordIndices.clear();
+                updateHPDisplay();
+                dom.timerDisplay.textContent = state.timeLeft;
+                switchScreen('monster-setup-page', 'monster-game-page');
+                dom.monsterDisplay.innerHTML = svgs.idle;
+                startIdleAnimation();
+                nextWord();
+                startTimer();
+                dom.answerInput.focus();
+            };
+            monsterGameManager.end = endGame;
+            monsterGameManager.stop = stopGameLogic;
+
+            dom.startBtn.addEventListener('click', monsterGameManager.start);
+            dom.backBtn.addEventListener('click', () => { showPage('practice-setup-page'); });
+            dom.skipBtn.addEventListener('click', skipQuestion);
+            dom.endGameBtn.addEventListener('click', () => endGame(false));
+            dom.answerInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') checkAnswer();
+            });
+        })();
+
+        // --- 魔藥煉製遊戲邏輯 ---
+        (function() {
+            window.potionGame = {};
+            
+            const dom = {
+                wrapper: document.getElementById('potion-game-wrapper'),
+                startScreen: document.getElementById('potion-start-screen'),
+                gameScreen: document.getElementById('potion-game-screen'),
+                gameBoard: document.getElementById('potion-game-board'),
+                cauldron: document.getElementById('potion-cauldron'),
+                mistakesCount: document.getElementById('potion-mistakes-count'),
+                starRating: document.getElementById('potion-star-rating'),
+                levelCompleteModal: document.getElementById('potion-level-complete-modal'),
+                collectionModal: document.getElementById('potion-collection-modal'),
+                lineSvg: document.getElementById('potion-line-svg'),
+                magicLine: document.getElementById('potion-magic-line'),
+                timer: document.getElementById('potion-timer'),
+                finalStarRating: document.getElementById('potion-final-star-rating'),
+                completionTime: document.getElementById('potion-completion-time'),
+                rewardSection: document.getElementById('potion-reward-section'),
+                noRewardSection: document.getElementById('potion-no-reward-section'),
+                potionName: document.getElementById('potion-name'),
+                potionDesc: document.getElementById('potion-desc'),
+                replayBtn: document.getElementById('potion-replay-btn'),
+                mainMenuBtn: document.getElementById('potion-main-menu-btn'),
+                collectionBtn: document.getElementById('potion-collection-btn'),
+                collectionGrid: document.getElementById('potion-collection-grid'),
+                collectionBackBtn: document.getElementById('potion-collection-back-btn'),
+                backToMenuBtn: document.getElementById('potion-back-to-menu-btn')
+            };
+
+            let state = {
+                wordPool: [],
+                currentDifficulty: 'easy',
+                wordPairs: [],
+                mistakes: 0,
+                pairsLeft: 0,
+                selectedBubble: null,
+                isDragging: false,
+                startTime: null,
+                timerInterval: null
+            };
+            
+             const potions = [
+                // --- 初級 (Easy) ---
+                // 3 Stars
+                { id: 101, name: "閃亮星星糖漿", desc: "讓你的思路像星星一樣清晰閃亮。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 3, timeRange: [0, 15] } },
+                { id: 102, name: "快樂氣泡飲", desc: "喝下後會忍不住微笑一整天。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 3, timeRange: [16, 25] } },
+                { id: 103, name: "順風耳滴劑", desc: "能稍微聽得更清楚一些。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 3, timeRange: [26, 35] } },
+                { id: 104, name: "活力泉水", desc: "感覺精神飽滿，充滿能量。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 3, timeRange: [36, 45] } },
+                { id: 105, name: "好眠牛奶", desc: "讓你做個關於單字的美夢。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 3, timeRange: [46, 9999] } },
+                // 2 Stars
+                { id: 106, name: "微光藥水", desc: "指尖會發出微弱的光芒。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 2, timeRange: [0, 15] } },
+                { id: 107, name: "變色墨水", desc: "寫出來的字會隨心情改變顏色。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 2, timeRange: [16, 25] } },
+                { id: 108, name: "誠實豆", desc: "吃下後短時間內無法說謊。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 2, timeRange: [26, 35] } },
+                { id: 109, name: "溫暖圍巾", desc: "感覺像是被一個溫暖的擁抱包圍。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 2, timeRange: [36, 45] } },
+                { id: 110, name: "普通的水", desc: "呃...它嚐起來就像普通的水。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 2, timeRange: [46, 9999] } },
+                // 1 Star
+                { id: 111, name: "健忘糖果", desc: "讓你忘記一件不重要的小事。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 1, timeRange: [0, 15] } },
+                { id: 112, name: "哈啾胡椒粉", desc: "聞一下就會打個大噴嚏。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 1, timeRange: [16, 25] } },
+                { id: 113, name: "悲傷洋蔥汁", desc: "為什麼我的眼淚流不停...", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 1, timeRange: [26, 35] } },
+                { id: 114, name: "慢動作糖漿", desc: "接下來的五分鐘，你的動作會變慢。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 1, timeRange: [36, 45] } },
+                { id: 115, name: "漏水的杯子", desc: "魔藥從杯底漏光了，真可惜。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 1, timeRange: [46, 9999] } },
+                
+                // --- 中級 (Medium) ---
+                // 3 Stars
+                { id: 201, name: "天才叡智藥劑", desc: "短時間內大幅提升理解與記憶能力。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 3, timeRange: [0, 30] } },
+                { id: 202, name: "專注糖漿", desc: "幫助你長時間集中精神，不受外界干擾。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 3, timeRange: [31, 45] } },
+                { id: 203, name: "巧言鳥鳴劑", desc: "說話變得像唱歌一樣悅耳動聽。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 3, timeRange: [46, 60] } },
+                { id: 204, name: "植物溝通露", desc: "你可以聽懂路邊小草的竊竊私語。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 3, timeRange: [61, 75] } },
+                { id: 205, name: "穩重之石", desc: "讓你的心情平靜下來，不易浮躁。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 3, timeRange: [76, 9999] } },
+                // 2 Stars
+                { id: 206, name: "記憶麵包屑", desc: "吃下後能回想起昨天早餐吃了什麼。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 2, timeRange: [0, 30] } },
+                { id: 207, name: "勇氣軟糖", desc: "給你舉手發問的勇氣。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 2, timeRange: [31, 45] } },
+                { id: 208, name: "反重力髮膠", desc: "你的頭髮會直直地朝向天空。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 2, timeRange: [46, 60] } },
+                { id: 209, name: "小幸運汽水", desc: "今天可能會在路上撿到一枚硬幣。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 2, timeRange: [61, 75] } },
+                { id: 210, name: "平淡無奇湯", desc: "味道不差，但也沒有什麼特別之處。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 2, timeRange: [76, 9999] } },
+                // 1 Star
+                { id: 211, name: "舌頭打結藥水", desc: "讓你暫時說話口齒不清。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 1, timeRange: [0, 30] } },
+                { id: 212, name: "尷尬紅暈霜", desc: "臉頰會不由自主地變紅。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 1, timeRange: [31, 45] } },
+                { id: 213, name: "磁力干擾劑", desc: "你身邊的湯匙和叉子會輕微顫抖。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 1, timeRange: [46, 60] } },
+                { id: 214, name: "易怒辣椒油", desc: "喝下後，一點小事就可能讓你生氣。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 1, timeRange: [61, 75] } },
+                { id: 215, name: "煮沸的泥水", desc: "看起來不太能喝的樣子...", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 1, timeRange: [76, 9999] } },
+                
+                // --- 高級 (Hard) ---
+                // 3 Stars
+                { id: 301, name: "語言通曉藥劑", desc: "一個小時內，你能聽懂並說出任何一種語言。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 3, timeRange: [0, 50] } },
+                { id: 302, name: "靈感之泉", desc: "文思泉湧，創意不斷！非常適合寫作和藝術創作。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 3, timeRange: [51, 70] } },
+                { id: 303, name: "鷹眼精華", desc: "你的視力會變得像老鷹一樣敏銳。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 3, timeRange: [71, 90] } },
+                { id: 304, name: "福靈劑", desc: "在接下來的一段時間裡，你會事事順利。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 3, timeRange: [91, 120] } },
+                { id: 305, name: "貓之敏捷", desc: "你的動作變得像貓一樣輕盈敏捷。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 3, timeRange: [121, 9999] } },
+                // 2 Stars
+                { id: 306, name: "夢境漫遊劑", desc: "今晚你可以控制自己的夢境。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 2, timeRange: [0, 50] } },
+                { id: 307, name: "回聲糖漿", desc: "你說的每句話都會延遲一秒後重複一次。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 2, timeRange: [51, 70] } },
+                { id: 308, name: "氣味幻象劑", desc: "你可以讓周圍的人聞到任何你想像的味道。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 2, timeRange: [71, 90] } },
+                { id: 309, name: "短暫隱形噴霧", desc: "可以隱形十秒鐘，時間一到就會現形。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 2, timeRange: [91, 120] } },
+                { id: 310, name: "變調藥水", desc: "你的聲音音調會隨機忽高忽低。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 2, timeRange: [121, 9999] } },
+                // 1 Star
+                { id: 311, name: "黏呼呼之觸", desc: "你碰到的所有東西都會變得有點黏。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 1, timeRange: [0, 50] } },
+                { id: 312, name: "增髮藥劑(副作用)", desc: "頭髮長得很快，但眉毛和鼻毛也一樣。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 1, timeRange: [51, 70] } },
+                { id: 313, name: "色彩失真鏡片", desc: "你眼中的世界暫時失去了所有色彩。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 1, timeRange: [71, 90] } },
+                { id: 314, name: "無感藥劑", desc: "暫時嚐不出任何食物的味道。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 1, timeRange: [91, 120] } },
+                { id: 315, name: "爆炸失敗的藥渣", desc: "發出一聲悶響和一縷黑煙，什麼也沒發生。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 1, timeRange: [121, 9999] } },
+
+                // --- 終極 (Ultimate) ---
+                // 3 Stars
+                { id: 401, name: "智慧賢者之釀", desc: "傳說中的魔藥，能讓你窺見知識的真理。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 3, timeRange: [0, 60] } },
+                { id: 402, name: "時間旅人沙漏", desc: "可以讓時間暫停五秒鐘。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 3, timeRange: [61, 90] } },
+                { id: 403, name: "元素親和劑", desc: "讓你能夠與風、水、火、土進行簡單的交流。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 3, timeRange: [91, 120] } },
+                { id: 404, name: "萬物變形水", desc: "可以將一塊石頭變成一塊麵包，或是一隻蝴蝶。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 3, timeRange: [121, 160] } },
+                { id: 405, name: "守護者星塵", desc: "一道溫和的光芒環繞著你，為你抵擋一次小小的厄運。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 3, timeRange: [161, 9999] } },
+                // 2 Stars
+                { id: 406, name: "心靈感應露水", desc: "可以模糊地感應到周遭人的情緒。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 2, timeRange: [0, 60] } },
+                { id: 407, name: "魅影步伐", desc: "走路時完全不會發出聲音。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 2, timeRange: [61, 90] } },
+                { id: 408, name: "雙倍生長劑", desc: "澆在植物上，它的大小會變成兩倍。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 2, timeRange: [91, 120] } },
+                { id: 409, name: "天氣預報糖", desc: "嚐起來的味道會預示明天的天氣，酸是下雨，甜是晴天。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 2, timeRange: [121, 160] } },
+                { id: 410, name: "永恆泡沫", desc: "吹出來的泡泡永遠不會破掉。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 2, timeRange: [161, 9999] } },
+                // 1 Star
+                { id: 411, name: "萬能鑰匙(仿)", desc: "看起來像萬能鑰匙，但其實什麼鎖都打不開。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 1, timeRange: [0, 60] } },
+                { id: 412, name: "引力逆轉劑(微量)", desc: "你的頭髮會飄起來，僅此而已。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 1, timeRange: [61, 90] } },
+                { id: 413, name: "縮小藥水(不穩定)", desc: "你的小指頭縮小了一半，幾分鐘後又變回來了。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 1, timeRange: [91, 120] } },
+                { id: 414, "name": "遺忘之霧", "desc": "呃...我剛剛想說什麼來著？", "unlocked": false, "unlockConditions": { "difficulty": "ultimate", "stars": 1, "timeRange": [121, 160] } },
+                { id: 415, name: "一鍋混沌", desc: "所有材料胡亂地混在一起，發出奇怪的顏色和氣味。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 1, timeRange: [161, 9999] } }
+             ];
+            
+            function savePotions() {
+                localStorage.setItem('wordPotionCollection', JSON.stringify(potions));
+            }
+
+            function loadPotions() {
+                const savedPotions = localStorage.getItem('wordPotionCollection');
+                if (savedPotions) {
+                    const parsedPotions = JSON.parse(savedPotions);
+                    potions.forEach(potion => {
+                        const saved = parsedPotions.find(p => p.id === potion.id);
+                        if (saved) {
+                            potion.unlocked = saved.unlocked;
+                        }
+                    });
+                }
+            }
+
+
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            function getWordsForDifficulty(difficulty) {
+                const sourcePool = state.wordPool;
+                let count;
+                switch (difficulty) {
+                    case 'easy': count = 3; break;
+                    case 'medium': count = 5; break;
+                    case 'hard': count = 8; break;
+                    case 'ultimate': count = 10; break;
+                }
+
+                // Ensure we don't try to pick more words than available
+                count = Math.min(count, sourcePool.length);
+                
+                const pickedWords = [];
+                const usedIndices = new Set();
+                
+                while (pickedWords.length < count) {
+                    const randomIndex = Math.floor(Math.random() * sourcePool.length);
+                    if (!usedIndices.has(randomIndex)) {
+                        usedIndices.add(randomIndex);
+                        pickedWords.push(sourcePool[randomIndex]);
+                    }
+                }
+                
+                return pickedWords.map(w => ({ en: w.word, ch: w.definitions[0].meaning }));
+            }
+            
+            function updateDifficultyButtons() {
+                const poolSize = state.wordPool.length;
+                document.querySelector('.potion-difficulty-btn[data-difficulty="easy"]').disabled = poolSize < 3;
+                document.querySelector('.potion-difficulty-btn[data-difficulty="medium"]').disabled = poolSize < 5;
+                document.querySelector('.potion-difficulty-btn[data-difficulty="hard"]').disabled = poolSize < 8;
+                document.querySelector('.potion-difficulty-btn[data-difficulty="ultimate"]').disabled = poolSize < 10;
+            }
+
+            function startGame(difficulty) {
+                 state.currentDifficulty = difficulty;
+                 dom.startScreen.classList.add('hidden');
+                 dom.gameScreen.classList.remove('hidden');
+                 dom.gameBoard.innerHTML = '';
+                 
+                 state.wordPairs = getWordsForDifficulty(difficulty);
+                 state.pairsLeft = state.wordPairs.length;
+                 state.mistakes = 0;
+                 updateMistakes();
+                 updateStars();
+                 clearInterval(state.timerInterval);
+                 startTimer();
+                 
+                 const bubblesData = [];
+                 state.wordPairs.forEach((pair, index) => {
+                    bubblesData.push({ text: pair.ch, pairId: index, lang: 'ch' });
+                    bubblesData.push({ text: pair.en, pairId: index, lang: 'en' });
+                 });
+                 shuffleArray(bubblesData);
+
+                 requestAnimationFrame(() => {
+                    bubblesData.forEach((data, i) => {
+                        const bubble = document.createElement('div');
+                        bubble.textContent = data.text;
+                        bubble.dataset.pairId = data.pairId;
+                        bubble.dataset.lang = data.lang;
+                        
+                        const isEnglish = data.lang === 'en';
+                        const size = isEnglish ? 'w-24 h-24 md:w-28 md:h-28 text-lg' : 'w-20 h-20 md:w-24 md:h-24 text-xl';
+                        const color = isEnglish ? 'bg-violet-500 border-violet-300' : 'bg-pink-500 border-pink-300';
+                        bubble.className = `potion-bubble ${size} ${color} border-4 font-bold shadow-lg`;
+                        
+                        let top, left, overlaps;
+                        const bubbleElements = Array.from(dom.gameBoard.children);
+                        let attempts = 0;
+                        do {
+                            overlaps = false;
+                            top = Math.random() * (dom.gameBoard.clientHeight - 150) + 40;
+                            left = Math.random() * (dom.gameBoard.clientWidth - 150) + 20;
+                             for (const existingBubble of bubbleElements) {
+                                const rect1 = { top, left, width: 120, height: 120 };
+                                const rect2 = {
+                                    top: parseFloat(existingBubble.style.top),
+                                    left: parseFloat(existingBubble.style.left),
+                                    width: 120, height: 120
+                                };
+                                if (rect1.left < rect2.left + rect2.width &&
+                                    rect1.left + rect1.width > rect2.left &&
+                                    rect1.top < rect2.top + rect2.height &&
+                                    rect1.top + rect1.height > rect2.top) {
+                                    overlaps = true;
+                                    break;
+                                }
+                            }
+                            attempts++;
+                        } while(overlaps && attempts < 100);
+                        bubble.style.top = `${top}px`;
+                        bubble.style.left = `${left}px`;
+                        bubble.style.zIndex = i;
+                        bubble.style.animationDelay = `${Math.random() * 2}s`;
+                        dom.gameBoard.appendChild(bubble);
+                    });
+                 });
+            }
+
+            function startTimer() {
+                state.startTime = Date.now();
+                state.timerInterval = setInterval(() => {
+                    const elapsedTime = Math.floor((Date.now() - state.startTime) / 1000);
+                    const minutes = String(Math.floor(elapsedTime / 60)).padStart(2, '0');
+                    const seconds = String(elapsedTime % 60).padStart(2, '0');
+                    dom.timer.textContent = `時間: ${minutes}:${seconds}`;
+                }, 1000);
+            }
+            
+            function updateMistakes() {
+                dom.mistakesCount.textContent = state.mistakes;
+            }
+
+            function updateStars() {
+                const stars = dom.starRating.children;
+                let filledStars = 3;
+                if (state.mistakes >= 10) filledStars = 0;
+                else if (state.mistakes >= 5) filledStars = 1;
+                else if (state.mistakes >= 2) filledStars = 2;
+                
+                for (let i = 0; i < 3; i++) {
+                    stars[i].classList.toggle('filled', i < filledStars);
+                }
+            }
+
+            function handleInteractionStart(e) {
+                const target = e.target.closest('.potion-bubble');
+                if (!target || target.classList.contains('paired')) return;
+                
+                e.preventDefault();
+                state.isDragging = true;
+                state.selectedBubble = target;
+                target.classList.add('selected');
+                
+                const rect = target.getBoundingClientRect();
+                const startX = rect.left + rect.width / 2;
+                const startY = rect.top + rect.height / 2;
+                
+                dom.magicLine.setAttribute('x1', startX);
+                dom.magicLine.setAttribute('y1', startY);
+                dom.magicLine.setAttribute('x2', startX);
+                dom.magicLine.setAttribute('y2', startY);
+                dom.magicLine.style.display = 'block';
+                
+                window.addEventListener('mousemove', handleInteractionMove);
+                window.addEventListener('touchmove', handleInteractionMove, { passive: false });
+                window.addEventListener('mouseup', handleInteractionEnd);
+                window.addEventListener('touchend', handleInteractionEnd);
+            }
+
+            function handleInteractionMove(e) {
+                if (!state.isDragging) return;
+                e.preventDefault();
+                
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                dom.magicLine.setAttribute('x2', clientX);
+                dom.magicLine.setAttribute('y2', clientY);
+            }
+
+            function handleInteractionEnd(e) {
+                if (!state.isDragging) return;
+                const endTarget = document.elementFromPoint(
+                    e.changedTouches ? e.changedTouches[0].clientX : e.clientX,
+                    e.changedTouches ? e.changedTouches[0].clientY : e.clientY
+                );
+                const targetBubble = endTarget ? endTarget.closest('.potion-bubble') : null;
+
+                if (state.selectedBubble && targetBubble && state.selectedBubble !== targetBubble) {
+                    if (state.selectedBubble.dataset.pairId === targetBubble.dataset.pairId) {
+                        animateBubbleToCauldron(state.selectedBubble);
+                        animateBubbleToCauldron(targetBubble);
+                        dom.cauldron.classList.add('active');
+                        setTimeout(() => dom.cauldron.classList.remove('active'), 800);
+                        state.pairsLeft--;
+                        if (state.pairsLeft === 0) {
+                            setTimeout(levelComplete, 1000);
+                        }
+                    } else {
+                        state.mistakes++;
+                        updateMistakes();
+                        updateStars();
+                    }
+                }
+                resetSelection();
+            }
+
+            function resetSelection() {
+                state.isDragging = false;
+                if(state.selectedBubble) {
+                    state.selectedBubble.classList.remove('selected');
+                    state.selectedBubble = null;
+                }
+                dom.magicLine.style.display = 'none';
+                window.removeEventListener('mousemove', handleInteractionMove);
+                window.removeEventListener('touchmove', handleInteractionMove);
+                window.removeEventListener('mouseup', handleInteractionEnd);
+                window.removeEventListener('touchend', handleInteractionEnd);
+            }
+            
+            function animateBubbleToCauldron(bubble) {
+                bubble.style.zIndex = 100;
+                const bubbleRect = bubble.getBoundingClientRect();
+                const cauldronRect = dom.cauldron.getBoundingClientRect();
+                const destX = cauldronRect.left + cauldronRect.width / 2;
+                const destY = cauldronRect.top + cauldronRect.height / 2;
+                const startX = bubbleRect.left + bubbleRect.width / 2;
+                const startY = bubbleRect.top + bubbleRect.height / 2;
+                const deltaX = destX - startX;
+                const deltaY = destY - startY;
+                bubble.animate([
+                    { transform: 'scale(1.1)', opacity: 1 },
+                    { transform: `translate(${deltaX}px, ${deltaY}px) scale(0.1)`, opacity: 0 }
+                ], {
+                    duration: 800,
+                    easing: 'cubic-bezier(0.55, 0.085, 0.68, 0.53)',
+                    fill: 'forwards'
+                });
+                bubble.classList.add('paired');
+            }
+            
+            function checkUnlocks(difficulty, stars, time) {
+                let unlockedPotion = null;
+                const matchingPotion = potions.find(potion => {
+                    const cond = potion.unlockConditions;
+                    return !potion.unlocked &&
+                           cond.difficulty === difficulty &&
+                           cond.stars === stars &&
+                           time >= cond.timeRange[0] &&
+                           time <= cond.timeRange[1];
+                });
+
+                if (matchingPotion) {
+                    matchingPotion.unlocked = true;
+                    unlockedPotion = matchingPotion;
+                    savePotions();
+                }
+                return unlockedPotion;
+            }
+
+            function levelComplete() {
+                clearInterval(state.timerInterval);
+                const completionTime = Math.floor((Date.now() - state.startTime) / 1000);
+                const finalStars = dom.starRating.querySelectorAll('.filled').length;
+                
+                dom.finalStarRating.innerHTML = dom.starRating.innerHTML;
+                dom.completionTime.textContent = `完成時間: ${completionTime} 秒`;
+                
+                const newlyUnlockedPotion = checkUnlocks(state.currentDifficulty, finalStars, completionTime);
+
+                if (newlyUnlockedPotion) {
+                    dom.rewardSection.classList.remove('hidden');
+                    dom.noRewardSection.classList.add('hidden');
+                    dom.potionName.textContent = newlyUnlockedPotion.name;
+                    dom.potionDesc.textContent = newlyUnlockedPotion.desc;
+                } else {
+                    dom.rewardSection.classList.add('hidden');
+                    dom.noRewardSection.classList.remove('hidden');
+                }
+                
+                dom.levelCompleteModal.classList.remove('hidden');
+            }
+            
+            function showCollection() {
+                const grid = dom.collectionGrid;
+                grid.innerHTML = '';
+                const difficultyMap = {
+                    'easy': '初級', 'medium': '中級', 'hard': '高級', 'ultimate': '終極'
+                };
+                
+                potions.forEach(potion => {
+                    const item = document.createElement('div');
+                    if (potion.unlocked) {
+                        item.className = "bg-gray-900/50 rounded-lg p-4 border border-violet-500 text-left";
+                        item.innerHTML = `
+                            <h3 class="text-xl font-bold text-violet-300">${potion.name}</h3>
+                            <p class="text-gray-400">${potion.desc}</p>
+                        `;
+                    } else {
+                        const cond = potion.unlockConditions;
+                        const difficultyText = difficultyMap[cond.difficulty];
+                        const starText = '★'.repeat(cond.stars) + '☆'.repeat(3 - cond.stars);
+                        const timeText = `${cond.timeRange[0]} - ${cond.timeRange[1]} 秒`;
+                        item.className = "bg-gray-900/50 rounded-lg p-4 border border-gray-600 text-left opacity-60";
+                        item.innerHTML = `
+                            <h3 class="text-xl font-bold text-gray-500">未解鎖的魔藥</h3>
+                            <p class="text-gray-500 mt-2">
+                                <span class="font-semibold">條件:</span> ${difficultyText} |
+                                <span class="text-yellow-400">${starText}</span> |
+                                ${timeText}
+                            </p>
+                        `;
+                    }
+                    grid.appendChild(item);
+                });
+                
+                dom.startScreen.classList.add('hidden');
+                dom.collectionModal.classList.remove('hidden');
+            }
+            
+            function hideCollection() {
+                dom.collectionModal.classList.add('hidden');
+                dom.startScreen.classList.remove('hidden');
+            }
+            
+            function showMenu(){
+                dom.gameScreen.classList.add('hidden');
+                dom.levelCompleteModal.classList.add('hidden');
+                dom.startScreen.classList.remove('hidden');
+                clearInterval(state.timerInterval);
+            }
+
+            function setupEventListeners() {
+                document.querySelectorAll('.potion-difficulty-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if(!btn.disabled) {
+                            startGame(btn.dataset.difficulty)
+                        }
+                    });
+                });
+                dom.backToMenuBtn.addEventListener('click', showMenu);
+                dom.mainMenuBtn.addEventListener('click', showMenu);
+                dom.replayBtn.addEventListener('click', () => {
+                    dom.levelCompleteModal.classList.add('hidden');
+                    startGame(state.currentDifficulty);
+                });
+                dom.collectionBtn.addEventListener('click', showCollection);
+                dom.collectionBackBtn.addEventListener('click', hideCollection);
+                dom.gameBoard.addEventListener('mousedown', handleInteractionStart);
+                dom.gameBoard.addEventListener('touchstart', handleInteractionStart, { passive: false });
+            }
+
+            window.potionGame = {
+                init: (wordPool) => {
+                    state.wordPool = wordPool;
+                    updateDifficultyButtons();
+                    dom.startScreen.classList.remove('hidden');
+                    dom.gameScreen.classList.add('hidden');
+                    dom.levelCompleteModal.classList.add('hidden');
+                    dom.collectionModal.classList.add('hidden');
+                    loadPotions();
+                    // Setup listeners only once
+                    if(!window.potionGame.initialized) {
+                         setupEventListeners();
+                         window.potionGame.initialized = true;
+                    }
+                },
+                end: () => {
+                    clearInterval(state.timerInterval);
+                    dom.startScreen.classList.remove('hidden');
+                    dom.gameScreen.classList.add('hidden');
+                }
+            };
+        })();
+
+
+        // --- 特效函式 ---
+        function triggerExplosion(x, y) {
+            const fxContainer = document.getElementById('fx-container');
+            if (!fxContainer) return;
+            
+            const particleCount = 20;
+            const shockwave = document.createElement('div');
+            shockwave.style.position = 'absolute';
+            shockwave.style.left = `${x}px`;
+            shockwave.style.top = `${y}px`;
+            shockwave.style.borderRadius = '50%';
+            shockwave.style.border = '3px solid rgba(255, 59, 59, 0.7)';
+            shockwave.style.transform = 'translate(-50%, -50%) scale(0)';
+            shockwave.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+            fxContainer.appendChild(shockwave);
+
+            requestAnimationFrame(() => {
+                shockwave.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                shockwave.style.opacity = '0';
+            });
+            setTimeout(() => shockwave.remove(), 300); // 動畫結束後移除自身
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                particle.style.background = `hsl(${Math.random() * 50}, 100%, 50%)`;
+                particle.style.width = `${Math.random() * 10 + 5}px`;
+                particle.style.height = `${Math.random() * 10 + 5}px`;
+                particle.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+                particle.style.transition = 'transform 0.5s ease-out, opacity 0.5s ease-out';
+                
+                const angle = Math.random() * 2 * Math.PI;
+                const distance = Math.random() * 80 + 50;
+                const finalX = Math.cos(angle) * distance;
+                const finalY = Math.sin(angle) * distance;
+                const rotation = Math.random() * 720 - 360;
+
+                fxContainer.appendChild(particle);
+
+                requestAnimationFrame(() => {
+                    particle.style.transform = `translate(-50%, -50%) translate(${finalX}px, ${finalY}px) rotate(${rotation}deg)`;
+                    particle.style.opacity = '0';
+                });
+                setTimeout(() => particle.remove(), 500); // 動畫結束後移除自身
+            }
+        }
+        function triggerSuccessPageConfetti() { /* ... 保持原樣 ... */ }
+        function triggerClickConfetti(x, y) {
+            const fxContainer = document.getElementById('fx-container');
+            if (!fxContainer) return;
+            
+            const particleCount = 30;
+            const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#00bcd4', '#4caf50', '#ffeb3b', '#ff9800'];
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.width = `${Math.random() * 8 + 4}px`;
+                particle.style.height = `${Math.random() * 15 + 8}px`;
+                particle.style.transition = 'transform 0.8s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.8s linear';
+
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 120 + 80;
+                const finalX = Math.cos(angle) * distance;
+                const finalY = Math.sin(angle) * distance - 40 + (Math.random() * 250);
+                const rotation = Math.random() * 1080 - 540;
+
+                fxContainer.appendChild(particle);
+
+                requestAnimationFrame(() => {
+                    particle.style.transform = `translate(-50%, -50%) translate(${finalX}px, ${finalY}px) rotate(${rotation}deg)`;
+                    particle.style.opacity = '0';
+                });
+                setTimeout(() => particle.remove(), 800); // 動畫結束後移除自身
+            }
+        }
+
+        // --- 初始化 ---
+        window.onload = () => {
+            // 頁面載入時，首先執行一次單字去重功能
+            removeDuplicateWords();
+
+            function loadVoices() {
+                const voices = speechSynthesis.getVoices();
+                // 優先選擇 Google US English，其次是任何 US English，最後是第一個英文語音
+                synthesisVoice = voices.find(voice => voice.name === 'Google US English') || 
+                                 voices.find(voice => voice.lang === 'en-US') ||
+                                 voices.find(voice => voice.lang.startsWith('en-'));
+            }
+
+            // 語音是異步載入的
+            loadVoices();
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = loadVoices;
+            }
+
+            organizeAndSortWords();
+            showPage('home-page');
+            document.getElementById('search-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    searchWord();
+                }
+            });
+        };
+    </script>
+</body>
+</html>
+
