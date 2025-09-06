@@ -64029,7 +64029,6 @@
       "N/A"
     ]
   }
-
         ];
 
         // --- 全域變數和狀態管理 ---
@@ -64045,6 +64044,61 @@
         let synthesisVoice = null;
         let favoriteFolders = [new Set(), new Set(), new Set(), new Set(), new Set()];
         let userAddedWordsSet = new Set();
+        let lastSearchTerm = '';
+
+        // --- 資料保存與讀取 (LocalStorage) ---
+        function saveData() {
+            try {
+                // 將 Set 轉換為 Array 以便 JSON 序列化
+                const serializableFavorites = favoriteFolders.map(folderSet => [...folderSet]);
+                const serializableUserWords = [...userAddedWordsSet];
+                
+                localStorage.setItem('vocabularyData', JSON.stringify(vocabulary));
+                localStorage.setItem('favoriteFoldersData', JSON.stringify(serializableFavorites));
+                localStorage.setItem('userAddedWordsData', JSON.stringify(serializableUserWords));
+                // potionGame.save() 已經被整合進 potions 數組的狀態，所以直接儲存 potions 即可
+                localStorage.setItem('potionsData', JSON.stringify(potions));
+                console.log('遊戲資料已儲存！');
+            } catch (e) {
+                console.error('儲存資料失敗:', e);
+            }
+        }
+
+        function loadData() {
+            try {
+                const savedVocab = localStorage.getItem('vocabularyData');
+                const savedFavorites = localStorage.getItem('favoriteFoldersData');
+                const savedUserWords = localStorage.getItem('userAddedWordsData');
+                const savedPotions = localStorage.getItem('potionsData');
+
+                if (savedVocab) {
+                    vocabulary = JSON.parse(savedVocab);
+                }
+
+                if (savedFavorites) {
+                    const parsedFavorites = JSON.parse(savedFavorites);
+                    favoriteFolders = parsedFavorites.map(folderArray => new Set(folderArray));
+                }
+
+                if (savedUserWords) {
+                    userAddedWordsSet = new Set(JSON.parse(savedUserWords));
+                }
+                
+                if (savedPotions) {
+                    const loadedPotions = JSON.parse(savedPotions);
+                    potions.forEach(p => {
+                        const savedPotion = loadedPotions.find(sp => sp.id === p.id);
+                        if (savedPotion) {
+                            p.unlocked = savedPotion.unlocked;
+                        }
+                    });
+                }
+                console.log('遊戲資料已讀取！');
+            } catch (e) {
+                console.error('讀取資料失敗:', e);
+                // 如果讀取失敗，則使用預設資料
+            }
+        }
 
         // --- 頁面導航 & 彈出視窗 ---
         function showPage(pageId) {
@@ -64069,6 +64123,7 @@
         function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
         
         function renderSearchResults(words, searchTerm) {
+            lastSearchTerm = searchTerm; // 記住這次的搜尋詞
             const grid = document.getElementById('search-results-grid');
             const title = document.querySelector('#search-results-page h2');
             title.textContent = `"${searchTerm}" 的搜尋結果 (${words.length})`;
@@ -64092,7 +64147,6 @@
                 card.onclick = () => {
                     const wordLocation = findWordLocation(wordObj.word);
                     if (wordLocation) {
-                        // 從搜尋結果點擊時，使用 'search' 類型，這樣返回按鈕才能回到搜尋結果頁
                         startFlashcardSession(wordLocation.letter, wordLocation.unitNum, wordLocation.index, 'search');
                     } else {
                         alert('抱歉，發生錯誤，找不到單字。');
@@ -64106,7 +64160,6 @@
         // --- 搜尋 & 新增/編輯單字邏輯 ---
         function findWordLocation(wordToFind) {
             const letter = wordToFind[0].toUpperCase();
-            // 優先搜尋普通單元 (A-Z)
             if (organizedWords[letter]) {
                 for (const unitNum in organizedWords[letter]) {
                     const index = organizedWords[letter][unitNum].findIndex(w => w.word === wordToFind);
@@ -64115,7 +64168,6 @@
                     }
                 }
             }
-            // 若找不到，再搜尋使用者新增的單元 (+)
             if (organizedWords['+']) {
                  for (const unitNum in organizedWords['+']) {
                     const index = organizedWords['+'][unitNum].findIndex(w => w.word === wordToFind);
@@ -64124,7 +64176,7 @@
                     }
                 }
             }
-            return null; // 在所有單元中都找不到
+            return null;
         }
 
         function searchWord() {
@@ -64152,7 +64204,6 @@
                 if (foundWord) {
                     const wordLocation = findWordLocation(foundWord.word);
                     if (wordLocation) {
-                        // 從英文搜尋直接跳轉，視為普通瀏覽，返回時應回到其所屬小單元
                         startFlashcardSession(wordLocation.letter, wordLocation.unitNum, wordLocation.index, 'normal');
                     } else {
                         alert('找到單字，但無法在單元中定位。');
@@ -64282,6 +64333,7 @@
             vocabulary.push(newWord);
             userAddedWordsSet.add(newWord.word);
             organizeAndSortWords();
+            saveData();
             closeModal('word-form-modal');
             searchWordWithValue(newWord.word);
         }
@@ -64300,6 +64352,7 @@
             vocabulary[wordIndex].synonyms = wordData.synonyms;
             
             organizeAndSortWords();
+            saveData();
             closeModal('word-form-modal');
             displayCard(); // Refresh current card
         }
@@ -64313,24 +64366,17 @@
         function removeDuplicateWords() {
             const seenWords = new Set();
             const uniqueVocabulary = [];
-            // 使用 for...of 迴圈遍歷單字庫
             for (const wordObj of vocabulary) {
-                // 將單字轉換為小寫以進行不區分大小寫的比對
                 const wordKey = wordObj.word.toLowerCase();
-                // 如果這個單字還沒有見過
                 if (!seenWords.has(wordKey)) {
-                    // 就將它加入到 'seen' 集合和新的單字庫中
                     seenWords.add(wordKey);
                     uniqueVocabulary.push(wordObj);
                 }
             }
-            // 計算移除了多少重複的單字
             const removedCount = vocabulary.length - uniqueVocabulary.length;
             if (removedCount > 0) {
-                // 在開發者控制台顯示訊息，方便您確認
                 console.log(`啟動時自動移除了 ${removedCount} 個重複的單字。`);
             }
-            // 用處理過的、無重複的單字庫替換舊的
             vocabulary = uniqueVocabulary;
         }
 
@@ -64355,15 +64401,13 @@
                 }
             });
             
-            // Organize favorite words (all folders combined for the main button)
             const allFavoriteWords = vocabulary.filter(word => favoriteFolders.some(folder => folder.has(word.word)));
             if (allFavoriteWords.length > 0) {
-                 organizedWords['★'] = { 1: allFavoriteWords }; // Simplified for hasWords check
+                 organizedWords['★'] = { 1: allFavoriteWords };
             } else {
                  delete organizedWords['★'];
             }
 
-            // Organize user-added words
             const userWords = vocabulary.filter(word => userAddedWordsSet.has(word.word));
             if (userWords.length > 0) {
                 organizedWords['+'] = {};
@@ -64403,7 +64447,6 @@
                         button.onclick = () => showMinorUnits(unit);
                     }
                 } else {
-                    // Allow clicking on empty '+' unit to see the page
                     if(unit === '+') {
                          button.onclick = () => showMinorUnits(unit);
                          button.disabled = false;
@@ -64470,7 +64513,6 @@
             const shuffled = [...vocabulary].sort(() => 0.5 - Math.random());
             const randomWords = shuffled.slice(0, 10);
             
-            // Create a temporary unit for these words
             organizedWords['🎲'] = { 1: randomWords };
             
             startFlashcardSession('🎲', 1, 0, 'random');
@@ -64487,8 +64529,14 @@
                 backButton.onclick = () => showPage('learn-main-page');
             } else if (sessionType === 'search') {
                 backButton.innerHTML = '<i class="fa fa-arrow-left mr-2"></i>返回搜尋結果';
-                backButton.onclick = () => showPage('search-results-page');
-            } else { // 'normal' or favorite folder sessions
+                backButton.onclick = () => {
+                    const matchedWords = vocabulary.filter(wordObj => 
+                        wordObj.definitions.some(def => def.meaning.includes(lastSearchTerm))
+                    );
+                    renderSearchResults(matchedWords, lastSearchTerm);
+                    showPage('search-results-page');
+                };
+            } else {
                 backButton.innerHTML = '<i class="fa fa-arrow-left mr-2"></i>返回小單元';
                 backButton.onclick = () => showMinorUnits(letter, sessionType);
             }
@@ -64527,7 +64575,7 @@
                 const addAllBtn = document.createElement('button');
                 addAllBtn.className = 'btn btn-blue text-sm';
                 addAllBtn.innerHTML = '<i class="fa fa-star mr-2"></i>一鍵加入最愛';
-                addAllBtn.onclick = () => openAddToFavoriteModal(true); // isBatch = true
+                addAllBtn.onclick = () => openAddToFavoriteModal(true);
                 headerRight.appendChild(addAllBtn);
             }
             
@@ -64572,6 +64620,7 @@
             if (isFav) {
                 favoriteFolders.forEach(folder => folder.delete(wordToHandle));
                 organizeAndSortWords();
+                saveData();
                 updateFavoriteButtonState();
             } else {
                 openAddToFavoriteModal(false);
@@ -64605,6 +64654,7 @@
             favoriteFolders[folderIndex].add(wordToAdd);
             
             organizeAndSortWords();
+            saveData();
             updateFavoriteButtonState();
             closeModal('add-to-favorite-modal');
         }
@@ -64618,44 +64668,27 @@
 
             currentFlashcardUnit.forEach(wordObj => {
                 const wordToAdd = wordObj.word;
-                
                 if (favoriteFolders[folderIndex].has(wordToAdd)) {
                     alreadyInFolder++;
                     return; 
                 }
-
-                if (favoriteFolders[folderIndex].size >= 500) {
-                    return; 
-                }
-                
+                if (favoriteFolders[folderIndex].size >= 500) return; 
                 favoriteFolders.forEach((folder, idx) => {
-                    if (idx !== folderIndex) {
-                        folder.delete(wordToAdd);
-                    }
+                    if (idx !== folderIndex) folder.delete(wordToAdd);
                 });
-                
                 favoriteFolders[folderIndex].add(wordToAdd);
                 addedCount++;
             });
             
             let alertMessage = '';
-            if (addedCount > 0) {
-                alertMessage += `成功加入 ${addedCount} 個新單字至資料夾 ${folderIndex + 1}！\n`;
-            }
-            if (alreadyInFolder > 0) {
-                alertMessage += `${alreadyInFolder} 個單字已存在於該資料夾。\n`;
-            }
-            if (addedCount + alreadyInFolder < totalWords) {
-                 alertMessage += `部分單字因資料夾已滿 (上限500) 而未加入。`;
-            }
-            
-            if(alertMessage.trim() === '') {
-                alertMessage = "沒有單字被加入。";
-            }
-
+            if (addedCount > 0) alertMessage += `成功加入 ${addedCount} 個新單字至資料夾 ${folderIndex + 1}！\n`;
+            if (alreadyInFolder > 0) alertMessage += `${alreadyInFolder} 個單字已存在於該資料夾。\n`;
+            if (addedCount + alreadyInFolder < totalWords) alertMessage += `部分單字因資料夾已滿 (上限500) 而未加入。`;
+            if(alertMessage.trim() === '') alertMessage = "沒有單字被加入。";
             alert(alertMessage.trim());
             
             organizeAndSortWords();
+            saveData();
             updateFavoriteButtonState();
             closeModal('add-to-favorite-modal');
         }
@@ -64667,6 +64700,7 @@
         function clearSingleFolder(folderIndex) {
             favoriteFolders[folderIndex].clear();
             organizeAndSortWords();
+            saveData();
             closeModal('confirm-modal');
             showMinorUnits(`fav-${folderIndex}`, `favorite-${folderIndex}`);
         }
@@ -64676,13 +64710,9 @@
             if (!wordData) return;
             const favBtn = document.getElementById('favorite-btn');
             const isFav = favoriteFolders.some(folder => folder.has(wordData.word));
-            if (isFav) {
-                favBtn.classList.add('favorited', 'text-yellow-400');
-                favBtn.classList.remove('text-gray-400');
-            } else {
-                favBtn.classList.remove('favorited', 'text-yellow-400');
-                favBtn.classList.add('text-gray-400');
-            }
+            favBtn.classList.toggle('favorited', isFav);
+            favBtn.classList.toggle('text-yellow-400', isFav);
+            favBtn.classList.toggle('text-gray-400', !isFav);
         }
 
         // --- 刪除單字 ---
@@ -64697,6 +64727,7 @@
             favoriteFolders.forEach(folder => folder.delete(wordToDelete));
             
             organizeAndSortWords();
+            saveData();
             
             currentFlashcardUnit = currentFlashcardUnit.filter(w => w.word !== wordToDelete);
             if (currentCardIndex >= currentFlashcardUnit.length) {
@@ -64752,7 +64783,7 @@
                 if (isFavorite) {
                     const favWords = vocabulary.filter(w => favoriteFolders.some(f => f.has(w.word)));
                     if (favWords.length > 0) {
-                        unitData = { 1: favWords }; // Group all favs into one selectable block
+                        unitData = { 1: favWords };
                     } else {
                         unitData = null;
                     }
@@ -64950,18 +64981,17 @@
                         x = Math.random() * (canvas.width - radius * 2) + radius;
 
                         for (const existingBalloon of tempBalloons) {
-                            // 檢查水平重疊，確保氣球之間有間隙
                             if (Math.abs(x - existingBalloon.x) < radius * 2) { 
                                 overlaps = true;
                                 break;
                             }
                         }
                         attempts++;
-                    } while (overlaps && attempts < 100); // 安全機制，避免無限迴圈
+                    } while (overlaps && attempts < 100);
 
                     tempBalloons.push({
                         x: x,
-                        y: canvas.height + radius + Math.random() * 150, // 隨機化起始 Y 座標
+                        y: canvas.height + radius + Math.random() * 150,
                         radius: radius,
                         speed: 1 + Math.random(),
                         text: word,
@@ -64974,39 +65004,29 @@
             function draw() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 state.balloons.forEach(b => {
-                    // 氣球繩子
                     ctx.strokeStyle = '#555';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
-                    ctx.moveTo(b.x, b.y + b.radius * 0.9); // 從氣球下方開始
+                    ctx.moveTo(b.x, b.y + b.radius * 0.9);
                     ctx.quadraticCurveTo(b.x + (Math.sin(b.y / 20) * 10), b.y + b.radius + 30, b.x, b.y + b.radius + 60);
                     ctx.stroke();
-
-                    // 氣球主體
                     ctx.fillStyle = b.color;
                     ctx.beginPath();
-                    // 讓氣球稍微橢圓一點
                     ctx.ellipse(b.x, b.y, b.radius * 0.9, b.radius, 0, 0, Math.PI * 2);
                     ctx.fill();
-
-                    // 氣球反光
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                     ctx.beginPath();
                     ctx.ellipse(b.x - b.radius * 0.25, b.y - b.radius * 0.3, b.radius * 0.2, b.radius * 0.4, -Math.PI / 4, 0, Math.PI * 2);
                     ctx.fill();
-
-                    // 氣球繩結
                     ctx.fillStyle = b.color;
-                    ctx.filter = 'brightness(80%)'; // 讓繩結顏色深一點
+                    ctx.filter = 'brightness(80%)';
                     ctx.beginPath();
                     ctx.moveTo(b.x - b.radius * 0.15, b.y + b.radius * 0.95);
                     ctx.lineTo(b.x + b.radius * 0.15, b.y + b.radius * 0.95);
                     ctx.lineTo(b.x, b.y + b.radius * 1.1);
                     ctx.closePath();
                     ctx.fill();
-                    ctx.filter = 'none'; // 重置濾鏡
-                    
-                    // 氣球上的文字
+                    ctx.filter = 'none';
                     ctx.fillStyle = 'black';
                     const fontSize = b.radius * 0.4;
                     ctx.font = `bold ${fontSize}px 'Inter', sans-serif`;
@@ -65017,30 +65037,20 @@
             }
 
             function update() {
-                // 從後往前遍歷，方便安全地移除元素
                 for (let i = state.balloons.length - 1; i >= 0; i--) {
                     const b = state.balloons[i];
                     b.y -= b.speed;
-
-                    // 如果氣球碰到或超過畫面上緣
                     if (b.y - b.radius <= 0) {
-                        // 檢查是否為正確答案的氣球
                         if (b.text === state.currentQuestion.english) {
-                            // 正確答案的氣球飛走了，算答錯
-                            state.score -= 5; // 因錯過正確答案而扣分
+                            state.score -= 5;
                             ui.score.textContent = state.score;
-                            
-                            // 在氣球撞擊的頂部位置觸發爆炸特效
                             const rect = canvas.getBoundingClientRect();
                             const screenX = rect.left + (b.x / canvas.width) * rect.width;
                             const screenY = rect.top;
                             triggerExplosion(screenX, screenY);
-                            
-                            // 直接換下一題並結束這次 update
                             nextQuestion();
                             return; 
                         } else {
-                            // 錯誤答案的氣球飛走了，就讓它消失
                             state.balloons.splice(i, 1);
                         }
                     }
@@ -65115,10 +65125,9 @@
              if (!hide || !show) return;
 
              if(isFromPracticeSetup) {
-                 // For practice setup, we just need to show the monster setup, not hide anything from the main app
                 document.querySelectorAll('#app > div, #success-page, #failure-page').forEach(page => page.classList.add('hidden'));
                 show.classList.remove('hidden');
-                setTimeout(() => show.classList.remove('opacity-0'), 50); // Fade in
+                setTimeout(() => show.classList.remove('opacity-0'), 50);
              } else {
                 hide.classList.add('opacity-0');
                 setTimeout(() => {
@@ -65365,80 +65374,61 @@
             };
             
              const potions = [
-                // --- 初級 (Easy) ---
-                // 3 Stars
                 { id: 101, name: "閃亮星星糖漿", desc: "讓你的思路像星星一樣清晰閃亮。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 3, timeRange: [0, 15] } },
                 { id: 102, name: "快樂氣泡飲", desc: "喝下後會忍不住微笑一整天。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 3, timeRange: [16, 25] } },
                 { id: 103, name: "順風耳滴劑", desc: "能稍微聽得更清楚一些。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 3, timeRange: [26, 35] } },
                 { id: 104, name: "活力泉水", desc: "感覺精神飽滿，充滿能量。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 3, timeRange: [36, 45] } },
                 { id: 105, name: "好眠牛奶", desc: "讓你做個關於單字的美夢。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 3, timeRange: [46, 9999] } },
-                // 2 Stars
                 { id: 106, name: "微光藥水", desc: "指尖會發出微弱的光芒。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 2, timeRange: [0, 15] } },
                 { id: 107, name: "變色墨水", desc: "寫出來的字會隨心情改變顏色。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 2, timeRange: [16, 25] } },
                 { id: 108, name: "誠實豆", desc: "吃下後短時間內無法說謊。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 2, timeRange: [26, 35] } },
                 { id: 109, name: "溫暖圍巾", desc: "感覺像是被一個溫暖的擁抱包圍。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 2, timeRange: [36, 45] } },
                 { id: 110, name: "普通的水", desc: "呃...它嚐起來就像普通的水。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 2, timeRange: [46, 9999] } },
-                // 1 Star
                 { id: 111, name: "健忘糖果", desc: "讓你忘記一件不重要的小事。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 1, timeRange: [0, 15] } },
                 { id: 112, name: "哈啾胡椒粉", desc: "聞一下就會打個大噴嚏。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 1, timeRange: [16, 25] } },
                 { id: 113, name: "悲傷洋蔥汁", desc: "為什麼我的眼淚流不停...", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 1, timeRange: [26, 35] } },
                 { id: 114, name: "慢動作糖漿", desc: "接下來的五分鐘，你的動作會變慢。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 1, timeRange: [36, 45] } },
                 { id: 115, name: "漏水的杯子", desc: "魔藥從杯底漏光了，真可惜。", unlocked: false, unlockConditions: { difficulty: 'easy', stars: 1, timeRange: [46, 9999] } },
-                
-                // --- 中級 (Medium) ---
-                // 3 Stars
                 { id: 201, name: "天才叡智藥劑", desc: "短時間內大幅提升理解與記憶能力。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 3, timeRange: [0, 30] } },
                 { id: 202, name: "專注糖漿", desc: "幫助你長時間集中精神，不受外界干擾。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 3, timeRange: [31, 45] } },
                 { id: 203, name: "巧言鳥鳴劑", desc: "說話變得像唱歌一樣悅耳動聽。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 3, timeRange: [46, 60] } },
                 { id: 204, name: "植物溝通露", desc: "你可以聽懂路邊小草的竊竊私語。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 3, timeRange: [61, 75] } },
                 { id: 205, name: "穩重之石", desc: "讓你的心情平靜下來，不易浮躁。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 3, timeRange: [76, 9999] } },
-                // 2 Stars
                 { id: 206, name: "記憶麵包屑", desc: "吃下後能回想起昨天早餐吃了什麼。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 2, timeRange: [0, 30] } },
                 { id: 207, name: "勇氣軟糖", desc: "給你舉手發問的勇氣。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 2, timeRange: [31, 45] } },
                 { id: 208, name: "反重力髮膠", desc: "你的頭髮會直直地朝向天空。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 2, timeRange: [46, 60] } },
                 { id: 209, name: "小幸運汽水", desc: "今天可能會在路上撿到一枚硬幣。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 2, timeRange: [61, 75] } },
                 { id: 210, name: "平淡無奇湯", desc: "味道不差，但也沒有什麼特別之處。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 2, timeRange: [76, 9999] } },
-                // 1 Star
                 { id: 211, name: "舌頭打結藥水", desc: "讓你暫時說話口齒不清。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 1, timeRange: [0, 30] } },
                 { id: 212, name: "尷尬紅暈霜", desc: "臉頰會不由自主地變紅。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 1, timeRange: [31, 45] } },
                 { id: 213, name: "磁力干擾劑", desc: "你身邊的湯匙和叉子會輕微顫抖。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 1, timeRange: [46, 60] } },
                 { id: 214, name: "易怒辣椒油", desc: "喝下後，一點小事就可能讓你生氣。", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 1, timeRange: [61, 75] } },
                 { id: 215, name: "煮沸的泥水", desc: "看起來不太能喝的樣子...", unlocked: false, unlockConditions: { difficulty: 'medium', stars: 1, timeRange: [76, 9999] } },
-                
-                // --- 高級 (Hard) ---
-                // 3 Stars
                 { id: 301, name: "語言通曉藥劑", desc: "一個小時內，你能聽懂並說出任何一種語言。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 3, timeRange: [0, 50] } },
                 { id: 302, name: "靈感之泉", desc: "文思泉湧，創意不斷！非常適合寫作和藝術創作。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 3, timeRange: [51, 70] } },
                 { id: 303, name: "鷹眼精華", desc: "你的視力會變得像老鷹一樣敏銳。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 3, timeRange: [71, 90] } },
                 { id: 304, name: "福靈劑", desc: "在接下來的一段時間裡，你會事事順利。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 3, timeRange: [91, 120] } },
                 { id: 305, name: "貓之敏捷", desc: "你的動作變得像貓一樣輕盈敏捷。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 3, timeRange: [121, 9999] } },
-                // 2 Stars
                 { id: 306, name: "夢境漫遊劑", desc: "今晚你可以控制自己的夢境。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 2, timeRange: [0, 50] } },
                 { id: 307, name: "回聲糖漿", desc: "你說的每句話都會延遲一秒後重複一次。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 2, timeRange: [51, 70] } },
                 { id: 308, name: "氣味幻象劑", desc: "你可以讓周圍的人聞到任何你想像的味道。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 2, timeRange: [71, 90] } },
                 { id: 309, name: "短暫隱形噴霧", desc: "可以隱形十秒鐘，時間一到就會現形。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 2, timeRange: [91, 120] } },
                 { id: 310, name: "變調藥水", desc: "你的聲音音調會隨機忽高忽低。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 2, timeRange: [121, 9999] } },
-                // 1 Star
                 { id: 311, name: "黏呼呼之觸", desc: "你碰到的所有東西都會變得有點黏。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 1, timeRange: [0, 50] } },
                 { id: 312, name: "增髮藥劑(副作用)", desc: "頭髮長得很快，但眉毛和鼻毛也一樣。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 1, timeRange: [51, 70] } },
                 { id: 313, name: "色彩失真鏡片", desc: "你眼中的世界暫時失去了所有色彩。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 1, timeRange: [71, 90] } },
                 { id: 314, name: "無感藥劑", desc: "暫時嚐不出任何食物的味道。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 1, timeRange: [91, 120] } },
                 { id: 315, name: "爆炸失敗的藥渣", desc: "發出一聲悶響和一縷黑煙，什麼也沒發生。", unlocked: false, unlockConditions: { difficulty: 'hard', stars: 1, timeRange: [121, 9999] } },
-
-                // --- 終極 (Ultimate) ---
-                // 3 Stars
                 { id: 401, name: "智慧賢者之釀", desc: "傳說中的魔藥，能讓你窺見知識的真理。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 3, timeRange: [0, 60] } },
                 { id: 402, name: "時間旅人沙漏", desc: "可以讓時間暫停五秒鐘。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 3, timeRange: [61, 90] } },
                 { id: 403, name: "元素親和劑", desc: "讓你能夠與風、水、火、土進行簡單的交流。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 3, timeRange: [91, 120] } },
                 { id: 404, name: "萬物變形水", desc: "可以將一塊石頭變成一塊麵包，或是一隻蝴蝶。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 3, timeRange: [121, 160] } },
                 { id: 405, name: "守護者星塵", desc: "一道溫和的光芒環繞著你，為你抵擋一次小小的厄運。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 3, timeRange: [161, 9999] } },
-                // 2 Stars
                 { id: 406, name: "心靈感應露水", desc: "可以模糊地感應到周遭人的情緒。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 2, timeRange: [0, 60] } },
                 { id: 407, name: "魅影步伐", desc: "走路時完全不會發出聲音。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 2, timeRange: [61, 90] } },
                 { id: 408, name: "雙倍生長劑", desc: "澆在植物上，它的大小會變成兩倍。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 2, timeRange: [91, 120] } },
                 { id: 409, name: "天氣預報糖", desc: "嚐起來的味道會預示明天的天氣，酸是下雨，甜是晴天。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 2, timeRange: [121, 160] } },
                 { id: 410, name: "永恆泡沫", desc: "吹出來的泡泡永遠不會破掉。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 2, timeRange: [161, 9999] } },
-                // 1 Star
                 { id: 411, name: "萬能鑰匙(仿)", desc: "看起來像萬能鑰匙，但其實什麼鎖都打不開。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 1, timeRange: [0, 60] } },
                 { id: 412, name: "引力逆轉劑(微量)", desc: "你的頭髮會飄起來，僅此而已。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 1, timeRange: [61, 90] } },
                 { id: 413, name: "縮小藥水(不穩定)", desc: "你的小指頭縮小了一半，幾分鐘後又變回來了。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 1, timeRange: [91, 120] } },
@@ -65446,24 +65436,6 @@
                 { id: 415, name: "一鍋混沌", desc: "所有材料胡亂地混在一起，發出奇怪的顏色和氣味。", unlocked: false, unlockConditions: { difficulty: 'ultimate', stars: 1, timeRange: [161, 9999] } }
              ];
             
-            function savePotions() {
-                localStorage.setItem('wordPotionCollection', JSON.stringify(potions));
-            }
-
-            function loadPotions() {
-                const savedPotions = localStorage.getItem('wordPotionCollection');
-                if (savedPotions) {
-                    const parsedPotions = JSON.parse(savedPotions);
-                    potions.forEach(potion => {
-                        const saved = parsedPotions.find(p => p.id === potion.id);
-                        if (saved) {
-                            potion.unlocked = saved.unlocked;
-                        }
-                    });
-                }
-            }
-
-
             function shuffleArray(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -65480,13 +65452,9 @@
                     case 'hard': count = 8; break;
                     case 'ultimate': count = 10; break;
                 }
-
-                // Ensure we don't try to pick more words than available
                 count = Math.min(count, sourcePool.length);
-                
                 const pickedWords = [];
                 const usedIndices = new Set();
-                
                 while (pickedWords.length < count) {
                     const randomIndex = Math.floor(Math.random() * sourcePool.length);
                     if (!usedIndices.has(randomIndex)) {
@@ -65494,7 +65462,6 @@
                         pickedWords.push(sourcePool[randomIndex]);
                     }
                 }
-                
                 return pickedWords.map(w => ({ en: w.word, ch: w.definitions[0].meaning }));
             }
             
@@ -65709,7 +65676,7 @@
                 if (matchingPotion) {
                     matchingPotion.unlocked = true;
                     unlockedPotion = matchingPotion;
-                    savePotions();
+                    saveData(); // Save data when a potion is unlocked
                 }
                 return unlockedPotion;
             }
@@ -65740,36 +65707,22 @@
             function showCollection() {
                 const grid = dom.collectionGrid;
                 grid.innerHTML = '';
-                const difficultyMap = {
-                    'easy': '初級', 'medium': '中級', 'hard': '高級', 'ultimate': '終極'
-                };
-                
+                const difficultyMap = { 'easy': '初級', 'medium': '中級', 'hard': '高級', 'ultimate': '終極' };
                 potions.forEach(potion => {
                     const item = document.createElement('div');
                     if (potion.unlocked) {
                         item.className = "bg-gray-900/50 rounded-lg p-4 border border-violet-500 text-left";
-                        item.innerHTML = `
-                            <h3 class="text-xl font-bold text-violet-300">${potion.name}</h3>
-                            <p class="text-gray-400">${potion.desc}</p>
-                        `;
+                        item.innerHTML = `<h3 class="text-xl font-bold text-violet-300">${potion.name}</h3><p class="text-gray-400">${potion.desc}</p>`;
                     } else {
                         const cond = potion.unlockConditions;
                         const difficultyText = difficultyMap[cond.difficulty];
                         const starText = '★'.repeat(cond.stars) + '☆'.repeat(3 - cond.stars);
                         const timeText = `${cond.timeRange[0]} - ${cond.timeRange[1]} 秒`;
                         item.className = "bg-gray-900/50 rounded-lg p-4 border border-gray-600 text-left opacity-60";
-                        item.innerHTML = `
-                            <h3 class="text-xl font-bold text-gray-500">未解鎖的魔藥</h3>
-                            <p class="text-gray-500 mt-2">
-                                <span class="font-semibold">條件:</span> ${difficultyText} |
-                                <span class="text-yellow-400">${starText}</span> |
-                                ${timeText}
-                            </p>
-                        `;
+                        item.innerHTML = `<h3 class="text-xl font-bold text-gray-500">未解鎖的魔藥</h3><p class="text-gray-500 mt-2"><span class="font-semibold">條件:</span> ${difficultyText} | <span class="text-yellow-400">${starText}</span> | ${timeText}</p>`;
                     }
                     grid.appendChild(item);
                 });
-                
                 dom.startScreen.classList.add('hidden');
                 dom.collectionModal.classList.remove('hidden');
             }
@@ -65788,11 +65741,7 @@
 
             function setupEventListeners() {
                 document.querySelectorAll('.potion-difficulty-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        if(!btn.disabled) {
-                            startGame(btn.dataset.difficulty)
-                        }
-                    });
+                    btn.addEventListener('click', () => { if(!btn.disabled) startGame(btn.dataset.difficulty) });
                 });
                 dom.backToMenuBtn.addEventListener('click', showMenu);
                 dom.mainMenuBtn.addEventListener('click', showMenu);
@@ -65814,8 +65763,7 @@
                     dom.gameScreen.classList.add('hidden');
                     dom.levelCompleteModal.classList.add('hidden');
                     dom.collectionModal.classList.add('hidden');
-                    loadPotions();
-                    // Setup listeners only once
+                    // loadPotions(); is now handled by global loadData()
                     if(!window.potionGame.initialized) {
                          setupEventListeners();
                          window.potionGame.initialized = true;
@@ -65850,7 +65798,7 @@
                 shockwave.style.transform = 'translate(-50%, -50%) scale(1.5)';
                 shockwave.style.opacity = '0';
             });
-            setTimeout(() => shockwave.remove(), 300); // 動畫結束後移除自身
+            setTimeout(() => shockwave.remove(), 300);
 
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
@@ -65875,10 +65823,10 @@
                     particle.style.transform = `translate(-50%, -50%) translate(${finalX}px, ${finalY}px) rotate(${rotation}deg)`;
                     particle.style.opacity = '0';
                 });
-                setTimeout(() => particle.remove(), 500); // 動畫結束後移除自身
+                setTimeout(() => particle.remove(), 500);
             }
         }
-        function triggerSuccessPageConfetti() { /* ... 保持原樣 ... */ }
+        function triggerSuccessPageConfetti() { /* ... */ }
         function triggerClickConfetti(x, y) {
             const fxContainer = document.getElementById('fx-container');
             if (!fxContainer) return;
@@ -65908,24 +65856,22 @@
                     particle.style.transform = `translate(-50%, -50%) translate(${finalX}px, ${finalY}px) rotate(${rotation}deg)`;
                     particle.style.opacity = '0';
                 });
-                setTimeout(() => particle.remove(), 800); // 動畫結束後移除自身
+                setTimeout(() => particle.remove(), 800);
             }
         }
 
         // --- 初始化 ---
         window.onload = () => {
-            // 頁面載入時，首先執行一次單字去重功能
+            loadData(); // <<<< 啟動時第一件事：讀取存檔
             removeDuplicateWords();
 
             function loadVoices() {
                 const voices = speechSynthesis.getVoices();
-                // 優先選擇 Google US English，其次是任何 US English，最後是第一個英文語音
                 synthesisVoice = voices.find(voice => voice.name === 'Google US English') || 
                                  voices.find(voice => voice.lang === 'en-US') ||
                                  voices.find(voice => voice.lang.startsWith('en-'));
             }
 
-            // 語音是異步載入的
             loadVoices();
             if (speechSynthesis.onvoiceschanged !== undefined) {
                 speechSynthesis.onvoiceschanged = loadVoices;
@@ -65942,3 +65888,4 @@
     </script>
 </body>
 </html>
+
