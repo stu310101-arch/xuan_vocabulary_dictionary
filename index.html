@@ -169,7 +169,7 @@
             pointer-events: none;
         }
         .potion-bubble.shake-anim {
-            animation: shake-it 0.5s ease-in-out;
+            animation: shake-it 0.3s ease-in-out;
         }
         @keyframes shake-it {
             0%, 100% { transform: translateX(0); }
@@ -65741,7 +65741,7 @@
                             // 使用 'if' 檢查確保泡泡元素仍然存在
                             if (state.selectedBubble) state.selectedBubble.classList.remove('shake-anim');
                             if (targetBubble) targetBubble.classList.remove('shake-anim');
-                        }, 500); // 動畫持續 0.5s
+                        }, 300); // 動畫持續 0.3s
                     }
                 }
 
