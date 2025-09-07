@@ -168,6 +168,14 @@
         .potion-bubble.paired {
             pointer-events: none;
         }
+        .potion-bubble.shake-anim {
+            animation: shake-it 0.5s ease-in-out;
+        }
+        @keyframes shake-it {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
+            20%, 40%, 60%, 80% { transform: translateX(6px); }
+        }
         .magic-line {
             stroke: #fde047;
             stroke-width: 4;
@@ -597,6 +605,11 @@
                     </circle>
                 </svg>
             </div>
+        </div>
+        
+        <!-- 新增：錯誤提示框 -->
+        <div id="potion-error-toast" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffde7] text-gray-800 p-6 rounded-2xl shadow-2xl z-[999] text-center border-4 border-red-400">
+            <p class="text-xl font-bold">兩個中文/英文不能配對<br>請仔細檢查</p>
         </div>
 
         <!-- Level Complete Modal -->
@@ -65258,19 +65271,26 @@
                 dom.answerInput.disabled = true;
                 dom.skipBtn.disabled = true;
                 dom.endGameBtn.disabled = true;
+
+                // 顯示正確答案 (紅色文字)
+                dom.feedback.textContent = `正確答案是: ${state.currentWord.word}`;
+                
                 state.currentHP = Math.min(state.maxHP, state.currentHP + Math.floor(Math.random() * 6) + 5);
                 updateHPDisplay();
                 stopIdleAnimation();
                 dom.monsterDisplay.innerHTML = svgs.happy;
+                
+                // 延長計時器讓使用者有時間看到答案
                 setTimeout(() => {
                     dom.monsterDisplay.innerHTML = svgs.idle;
                     startIdleAnimation();
-                    nextWord();
+                    nextWord(); // 這個函式會清除 feedback 文字
+
                     dom.answerInput.disabled = false;
                     dom.skipBtn.disabled = false;
                     dom.endGameBtn.disabled = false;
                     dom.answerInput.focus();
-                }, 1200);
+                }, 2000); // 2 秒鐘看答案
             }
 
             function updateHPDisplay() {
@@ -65363,7 +65383,8 @@
                 collectionBtn: document.getElementById('potion-collection-btn'),
                 collectionGrid: document.getElementById('potion-collection-grid'),
                 collectionBackBtn: document.getElementById('potion-collection-back-btn'),
-                backToMenuBtn: document.getElementById('potion-back-to-menu-btn')
+                backToMenuBtn: document.getElementById('potion-back-to-menu-btn'),
+                errorToast: document.getElementById('potion-error-toast')
             };
 
             let state = {
@@ -65689,8 +65710,16 @@
                 );
                 const targetBubble = endTarget ? endTarget.closest('.potion-bubble') : null;
 
-                if (state.selectedBubble && targetBubble && state.selectedBubble !== targetBubble) {
-                    if (state.selectedBubble.dataset.pairId === targetBubble.dataset.pairId) {
+                if (state.selectedBubble && targetBubble && state.selectedBubble !== targetBubble && !targetBubble.classList.contains('paired')) {
+                    if (state.selectedBubble.dataset.lang === targetBubble.dataset.lang) {
+                        // 誤觸防呆 (相同語言): 顯示對話框，不晃動
+                        dom.errorToast.classList.remove('hidden');
+                        setTimeout(() => {
+                            dom.errorToast.classList.add('hidden');
+                        }, 1500);
+
+                    } else if (state.selectedBubble.dataset.pairId === targetBubble.dataset.pairId) {
+                        // 正確配對
                         animateBubbleToCauldron(state.selectedBubble);
                         animateBubbleToCauldron(targetBubble);
                         dom.cauldron.classList.add('active');
@@ -65700,11 +65729,22 @@
                             setTimeout(levelComplete, 1000);
                         }
                     } else {
+                        // 錯誤配對 (不同語言): 晃動，計為錯誤，不顯示對話框
                         state.mistakes++;
                         updateMistakes();
                         updateStars();
+                        
+                        // 觸發晃動
+                        state.selectedBubble.classList.add('shake-anim');
+                        targetBubble.classList.add('shake-anim');
+                        setTimeout(() => {
+                            // 使用 'if' 檢查確保泡泡元素仍然存在
+                            if (state.selectedBubble) state.selectedBubble.classList.remove('shake-anim');
+                            if (targetBubble) targetBubble.classList.remove('shake-anim');
+                        }, 500); // 動畫持續 0.5s
                     }
                 }
+
                 resetSelection();
             }
 
@@ -65759,18 +65799,33 @@
                     return { unlocked: false, message: 'already_unlocked' };
                 }
 
-                const baseProb = { 3: 80, 2: 90, 1: 95, 0: 100 }[stars];
+                let baseProb;
+                const isLowerDifficulty = difficulty === 'trainee' || difficulty === 'novice';
+
+                // 檢查是否為需要調整機率的較低難度，且不為0星魔藥
+                if (isLowerDifficulty && stars > 0) {
+                    switch (stars) {
+                        case 3: baseProb = 65; break; // 原始 80% - 15%
+                        case 2: baseProb = 75; break; // 原始 90% - 15%
+                        case 1: baseProb = 75; break; // 原始 95% - 15% - 5%
+                        default: baseProb = 0; // 備用，正常情況不會觸發
+                    }
+                } else {
+                    // 其他難度或0星魔藥則使用原始機率
+                    baseProb = { 3: 80, 2: 90, 1: 95, 0: 100 }[stars] || 0;
+                }
+
                 const finalProb = Math.min(100, baseProb + potionPityBonus);
                 const roll = Math.random() * 100;
 
                 if (roll < finalProb) {
-                    // Success
+                    // 成功
                     targetPotion.unlocked = true;
                     potionPityBonus = 0;
                     saveData();
                     return { unlocked: true, potion: targetPotion, message: 'success' };
                 } else {
-                    // Failure
+                    // 失敗
                     potionPityBonus += 5;
                     saveData();
                     return { unlocked: false, message: 'failure' };
