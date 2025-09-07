@@ -65713,14 +65713,9 @@
                 const targetBubble = endTarget ? endTarget.closest('.potion-bubble') : null;
 
                 if (state.selectedBubble && targetBubble && state.selectedBubble !== targetBubble && !targetBubble.classList.contains('paired')) {
-                    if (state.selectedBubble.dataset.lang === targetBubble.dataset.lang) {
-                        // 誤觸防呆 (相同語言): 顯示對話框，不晃動
-                        dom.errorToast.classList.remove('hidden');
-                        setTimeout(() => {
-                            dom.errorToast.classList.add('hidden');
-                        }, 1500);
+                    const isCorrectPair = state.selectedBubble.dataset.pairId === targetBubble.dataset.pairId && state.selectedBubble.dataset.lang !== targetBubble.dataset.lang;
 
-                    } else if (state.selectedBubble.dataset.pairId === targetBubble.dataset.pairId) {
+                    if (isCorrectPair) {
                         // 正確配對
                         animateBubbleToCauldron(state.selectedBubble);
                         animateBubbleToCauldron(targetBubble);
@@ -65731,14 +65726,26 @@
                             setTimeout(levelComplete, 1000);
                         }
                     } else {
-                        // 錯誤配對 (不同語言): 晃動，計為錯誤，不顯示對話框
-                        state.mistakes++;
-                        updateMistakes();
-                        updateStars();
+                        // 所有錯誤配對的處理 (包括相同語言)
                         
-                        // 為了確保即時反應並正確移除動畫，先將泡泡存為局部變數
+                        // 如果是相同語言，顯示提示
+                        if (state.selectedBubble.dataset.lang === targetBubble.dataset.lang) {
+                            dom.errorToast.classList.remove('hidden');
+                            setTimeout(() => {
+                                dom.errorToast.classList.add('hidden');
+                            }, 1500);
+                        } else {
+                            // 如果是不同語言的錯誤配對，才計為錯誤
+                            state.mistakes++;
+                            updateMistakes();
+                            updateStars();
+                        }
+                        
                         const bubbleToShake1 = state.selectedBubble;
                         const bubbleToShake2 = targetBubble;
+
+                        // 關鍵修正：先移除 selected class，再加入 shake-anim，確保動畫立即播放
+                        bubbleToShake1.classList.remove('selected');
 
                         // 立即為兩個泡泡加上晃動動畫 class
                         bubbleToShake1.classList.add('shake-anim');
@@ -65746,8 +65753,8 @@
                         
                         // 動畫結束後 (200ms) 移除 class
                         setTimeout(() => {
-                            bubbleToShake1.classList.remove('shake-anim');
-                            bubbleToShake2.classList.remove('shake-anim');
+                            if (bubbleToShake1) bubbleToShake1.classList.remove('shake-anim');
+                            if (bubbleToShake2) bubbleToShake2.classList.remove('shake-anim');
                         }, 200);
                     }
                 }
@@ -66054,3 +66061,4 @@
     </script>
 </body>
 </html>
+
