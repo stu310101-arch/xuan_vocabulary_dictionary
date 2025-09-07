@@ -64031,7 +64031,6 @@
       "N/A"
     ]
   }
-
         ];
 
         // --- 全域變數和狀態管理 ---
@@ -64048,21 +64047,19 @@
         let favoriteFolders = [new Set(), new Set(), new Set(), new Set(), new Set()];
         let userAddedWordsSet = new Set();
         let lastSearchTerm = '';
-        let potionPityBonus = 0; // << 新增：魔藥保底機率
+        let potionPityBonus = 0;
 
         // --- 資料保存與讀取 (LocalStorage) ---
         function saveData() {
             try {
-                // 將 Set 轉換為 Array 以便 JSON 序列化
                 const serializableFavorites = favoriteFolders.map(folderSet => [...folderSet]);
                 const serializableUserWords = [...userAddedWordsSet];
                 
                 localStorage.setItem('vocabularyData', JSON.stringify(vocabulary));
                 localStorage.setItem('favoriteFoldersData', JSON.stringify(serializableFavorites));
                 localStorage.setItem('userAddedWordsData', JSON.stringify(serializableUserWords));
-                // potionGame.save() 已經被整合進 potions 數組的狀態，所以直接儲存 potions 即可
                 localStorage.setItem('potionsData', JSON.stringify(potions));
-                localStorage.setItem('potionPityBonus', JSON.stringify(potionPityBonus)); // << 新增：儲存保底機率
+                localStorage.setItem('potionPityBonus', JSON.stringify(potionPityBonus));
                 console.log('遊戲資料已儲存！');
             } catch (e) {
                 console.error('儲存資料失敗:', e);
@@ -64075,7 +64072,7 @@
                 const savedFavorites = localStorage.getItem('favoriteFoldersData');
                 const savedUserWords = localStorage.getItem('userAddedWordsData');
                 const savedPotions = localStorage.getItem('potionsData');
-                const savedPityBonus = localStorage.getItem('potionPityBonus'); // << 新增：讀取保底機率
+                const savedPityBonus = localStorage.getItem('potionPityBonus');
 
                 if (savedVocab) {
                     vocabulary = JSON.parse(savedVocab);
@@ -64099,13 +64096,12 @@
                         }
                     });
                 }
-                if (savedPityBonus) { // << 新增
+                if (savedPityBonus) {
                     potionPityBonus = JSON.parse(savedPityBonus);
                 }
                 console.log('遊戲資料已讀取！');
             } catch (e) {
                 console.error('讀取資料失敗:', e);
-                // 如果讀取失敗，則使用預設資料
             }
         }
 
@@ -65508,7 +65504,12 @@
                 { id: 612, name: "物理法則破壞劑(劣質)", desc: "你面前的桌子可能會短路、當機、需要重開機。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 1, timeRange: [151, 200] } },
                 { id: 613, name: "形上學義大利麵", desc: "它既存在又不存在，你永遠吃不到它。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 1, timeRange: [201, 250] } },
                 { id: 614, name: "薛丁格的藥水", desc: "在打開瓶蓋前，你永遠不知道它有沒有毒。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 1, timeRange: [251, 300] } },
-                { id: 615, name: "宇宙大爆炸殘渣", desc: "一無所有，萬物之始，空空如也。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 1, timeRange: [301, 9999] } }
+                { id: 615, name: "宇宙大爆炸殘渣", desc: "一無所有，萬物之始，空空如也。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 1, timeRange: [301, 9999] } },
+                { id: 621, name: "現實扭曲場(失控版)", desc: "你周遭的現實變得像卡通一樣，物理法則完全失效。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [0, 150] } },
+                { id: 622, name: "第四面牆破除劑", desc: "你突然意識到自己只是遊戲中的一個角色，並陷入了深刻的存在危機。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [151, 200] } },
+                { id: 623, name: "宇宙弦撥弄液", desc: "你試圖撥動宇宙的琴弦，結果發出了刺耳的噪音，讓全宇宙都頭痛。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [201, 250] } },
+                { id: 624, name: "蝴蝶效應放大器", desc: "你打了個噴嚏，結果在世界的另一端引發了一場荒謬的貓狗大戰。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [251, 300] } },
+                { id: 625, name: "無", desc: "瓶子裡什麼都沒有。不是空的，是'無'。一種形而上的、令人不安的'無'。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [301, 9999] } }
              ];
             
             function shuffleArray(array) {
@@ -65991,4 +65992,3 @@
     </script>
 </body>
 </html>
-
