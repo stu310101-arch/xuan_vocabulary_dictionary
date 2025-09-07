@@ -169,7 +169,7 @@
             pointer-events: none;
         }
         .potion-bubble.shake-anim {
-            animation: shake-it 0.05s ease-in-out;
+            animation: shake-it 0.01s ease-in-out;
         }
         @keyframes shake-it {
             0%, 100% { transform: translateX(0); }
@@ -64304,19 +64304,19 @@
                     return null;
                 }
                 if (!validPOSRegex.test(posInput)) {
-                     alert(`定義 ${i+1} 的「詞性」格式不正確。\n請使用如 "n.", "v." 的縮寫。`);
+                     alert(`定義 ${i+1} の「詞性」格式不正確。\n請使用如 "n.", "v." の縮寫。`);
                     return null;
                 }
                 if (!onlyChineseRegex.test(meaningInput)) {
-                    alert(`定義 ${i+1} 的「中文意思」只能包含中文字元。`);
+                    alert(`定義 ${i+1} の「中文意思」只能包含中文字元。`);
                     return null;
                 }
                 if (!validEnglishTextRegex.test(exEnInput)) {
-                    alert(`定義 ${i+1} 的「英文例句」包含無效字元。`);
+                    alert(`定義 ${i+1} の「英文例句」包含無效字元。`);
                     return null;
                 }
                 if (exZhInput && !validMixedTextRegex.test(exZhInput)) {
-                    alert(`定義 ${i+1} 的「中文例句」包含無效字元。`);
+                    alert(`定義 ${i+1} の「中文例句」包含無效字元。`);
                     return null;
                 }
                 
@@ -64393,7 +64393,7 @@
             }
             const removedCount = vocabulary.length - uniqueVocabulary.length;
             if (removedCount > 0) {
-                console.log(`啟動時自動移除了 ${removedCount} 個重複的單字。`);
+                console.log(`啟動時自動移除了 ${removedCount} 個重複の單字。`);
             }
             vocabulary = uniqueVocabulary;
         }
@@ -64486,7 +64486,7 @@
 
             let title = `單元 ${letter}`;
              if (letter === '+') {
-                title = '新增的單字';
+                title = '新增の單字';
             } else if (sessionType.startsWith('favorite-')) {
                 const folderIndex = parseInt(sessionType.split('-')[1]);
                 title = `最愛資料夾 ${folderIndex + 1}`;
@@ -64911,7 +64911,7 @@
                 initBalloonGame(wordPool);
             } else if (practiceSettings.type === 'monster-challenge') {
                 if (wordPool.length < 1) {
-                    alert('請至少選擇一個有單字的單元！');
+                    alert('請至少選擇一個有單字の單元！');
                     return;
                 }
                 monsterGameManager.init(wordPool);
@@ -64959,9 +64959,9 @@
                 ui.overlay.classList.remove('hidden');
                 ui.overlay.classList.add('flex');
                 if (status === 'idle') {
-                    ui.overlay.innerHTML = `<h2 class="text-4xl font-bold mb-4">射氣球遊戲</h2><p class="text-xl mb-6">點擊正確的英文單字氣球！</p><div class="mb-6"><h3 class="text-2xl font-bold mb-3">選擇時間</h3><div class="flex gap-4"><button onclick="balloonGameManager.start(30)" class="btn bg-pink-400 text-white text-xl px-8 py-3">30秒</button><button onclick="balloonGameManager.start(60)" class="btn bg-pink-400 text-white text-xl px-8 py-3">60秒</button><button onclick="balloonGameManager.start(90)" class="btn bg-pink-400 text-white text-xl px-8 py-3">90秒</button></div></div>`;
+                    ui.overlay.innerHTML = `<h2 class="text-4xl font-bold mb-4">射氣球遊戲</h2><p class="text-xl mb-6">點擊正確の英文單字氣球！</p><div class="mb-6"><h3 class="text-2xl font-bold mb-3">選擇時間</h3><div class="flex gap-4"><button onclick="balloonGameManager.start(30)" class="btn bg-pink-400 text-white text-xl px-8 py-3">30秒</button><button onclick="balloonGameManager.start(60)" class="btn bg-pink-400 text-white text-xl px-8 py-3">60秒</button><button onclick="balloonGameManager.start(90)" class="btn bg-pink-400 text-white text-xl px-8 py-3">90秒</button></div></div>`;
                 } else if (status === 'ended') {
-                    ui.overlay.innerHTML = `<h2 class="text-4xl font-bold mb-4">遊戲結束！</h2><p class="text-3xl mb-8">你的分數: <span class="text-yellow-300">${score}</span></p><button onclick="showPage('practice-setup-page')" class="btn bg-pink-400 text-white text-xl px-8 py-3">返回</button>`;
+                    ui.overlay.innerHTML = `<h2 class="text-4xl font-bold mb-4">遊戲結束！</h2><p class="text-3xl mb-8">你の分數: <span class="text-yellow-300">${score}</span></p><button onclick="showPage('practice-setup-page')" class="btn bg-pink-400 text-white text-xl px-8 py-3">返回</button>`;
                 } else if (status === 'all-words-done') {
                     ui.overlay.innerHTML = `<h2 class="text-4xl font-bold mb-4">太厲害了！</h2><p class="text-2xl mb-8">你已完成所有單字！<br>最終分數: <span class="text-yellow-300">${score}</span></p><button onclick="endPractice()" class="btn bg-pink-400 text-white text-xl px-8 py-3">返回設定</button>`;
                 }
@@ -65405,39 +65405,39 @@
                 { id: 102, name: "快樂氣泡飲", desc: "喝下後會忍不住微笑一整天。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 3, timeRange: [16, 25] } },
                 { id: 103, name: "順風耳滴劑", desc: "能稍微聽得更清楚一些。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 3, timeRange: [26, 35] } },
                 { id: 104, name: "活力泉水", desc: "感覺精神飽滿，充滿能量。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 3, timeRange: [36, 45] } },
-                { id: 105, name: "好眠牛奶", desc: "讓你做個關於單字的美夢。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 3, timeRange: [46, 9999] } },
-                { id: 106, name: "微光藥水", desc: "指尖會發出微弱的光芒。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 2, timeRange: [0, 15] } },
-                { id: 107, name: "變色墨水", desc: "寫出來的字會隨心情改變顏色。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 2, timeRange: [16, 25] } },
+                { id: 105, name: "好眠牛奶", desc: "讓你做個關於單字の美夢。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 3, timeRange: [46, 9999] } },
+                { id: 106, name: "微光藥水", desc: "指尖會發出微弱の光芒。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 2, timeRange: [0, 15] } },
+                { id: 107, name: "變色墨水", desc: "寫出來の字會隨心情改變顏色。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 2, timeRange: [16, 25] } },
                 { id: 108, name: "誠實豆", desc: "吃下後短時間內無法說謊。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 2, timeRange: [26, 35] } },
-                { id: 109, name: "溫暖圍巾", desc: "感覺像是被一個溫暖的擁抱包圍。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 2, timeRange: [36, 45] } },
-                { id: 110, name: "普通的水", desc: "呃...它嚐起來就像普通的水。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 2, timeRange: [46, 9999] } },
-                { id: 111, name: "健忘糖果", desc: "讓你忘記一件不重要的小事。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 1, timeRange: [0, 15] } },
+                { id: 109, name: "溫暖圍巾", desc: "感覺像是被一個溫暖の擁抱包圍。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 2, timeRange: [36, 45] } },
+                { id: 110, name: "普通の水", desc: "呃...它嚐起來就像普通の水。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 2, timeRange: [46, 9999] } },
+                { id: 111, name: "健忘糖果", desc: "讓你忘記一件不重要の小事。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 1, timeRange: [0, 15] } },
                 { id: 112, name: "哈啾胡椒粉", desc: "聞一下就會打個大噴嚏。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 1, timeRange: [16, 25] } },
-                { id: 113, name: "悲傷洋蔥汁", desc: "為什麼我的眼淚流不停...", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 1, timeRange: [26, 35] } },
-                { id: 114, name: "慢動作糖漿", desc: "接下來的五分鐘，你的動作會變慢。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 1, timeRange: [36, 45] } },
-                { id: 115, name: "漏水的杯子", desc: "魔藥從杯底漏光了，真可惜。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 1, timeRange: [46, 9999] } },
+                { id: 113, name: "悲傷洋蔥汁", desc: "為什麼我の眼淚流不停...", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 1, timeRange: [26, 35] } },
+                { id: 114, name: "慢動作糖漿", desc: "接下來の五分鐘，你的動作會變慢。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 1, timeRange: [36, 45] } },
+                { id: 115, name: "漏水の杯子", desc: "魔藥從杯底漏光了，真可惜。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 1, timeRange: [46, 9999] } },
                 { id: 121, name: "飛高高藥水 (實驗品)", desc: "喝下後，你的身體會不受控制地向上飄...直到撞到天花板。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 0, timeRange: [0, 15] } },
-                { id: 122, name: "誠實豆 (超強效版)", desc: "不僅無法說謊，還會把你所有尷尬的秘密都說出來。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 0, timeRange: [16, 25] } },
-                { id: 123, name: "靜電產生器", desc: "你變成了一個行走的人形靜電產生器，碰什麼都觸電。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 0, timeRange: [26, 35] } },
+                { id: 122, name: "誠實豆 (超強效版)", desc: "不僅無法說謊，還會把你所有尷尬の秘密都說出來。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 0, timeRange: [16, 25] } },
+                { id: 123, name: "靜電產生器", desc: "你變成了一個行走の人形靜電產生器，碰什麼都觸電。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 0, timeRange: [26, 35] } },
                 { id: 124, name: "絕對路痴藥劑", desc: "即使在家裡，你也找不到廁所。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 0, timeRange: [36, 45] } },
-                { id: 125, name: "漏光的鍋子", desc: "魔藥在煉製過程中就漏光了，只剩下一些奇怪的殘渣。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 0, timeRange: [46, 9999] } },
+                { id: 125, name: "漏光の鍋子", desc: "魔藥在煉製過程中就漏光了，只剩下一些奇怪の殘渣。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 0, timeRange: [46, 9999] } },
                 
                 // --- 新手巫師 (5題) ---
                 { id: 201, name: "天才叡智藥劑", desc: "短時間內大幅提升理解與記憶能力。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 3, timeRange: [0, 30] } },
                 { id: 202, name: "專注糖漿", desc: "幫助你長時間集中精神，不受外界干擾。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 3, timeRange: [31, 45] } },
                 { id: 203, name: "巧言鳥鳴劑", desc: "說話變得像唱歌一樣悅耳動聽。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 3, timeRange: [46, 60] } },
-                { id: 204, name: "植物溝通露", desc: "你可以聽懂路邊小草的竊竊私語。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 3, timeRange: [61, 75] } },
+                { id: 204, name: "植物溝通露", desc: "你可以聽懂路邊小草の竊竊私語。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 3, timeRange: [61, 75] } },
                 { id: 205, name: "穩重之石", desc: "讓你的心情平靜下來，不易浮躁。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 3, timeRange: [76, 9999] } },
                 { id: 206, name: "記憶麵包屑", desc: "吃下後能回想起昨天早餐吃了什麼。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 2, timeRange: [0, 30] } },
-                { id: 207, name: "勇氣軟糖", desc: "給你舉手發問的勇氣。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 2, timeRange: [31, 45] } },
+                { id: 207, name: "勇氣軟糖", desc: "給你舉手發問の勇氣。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 2, timeRange: [31, 45] } },
                 { id: 208, name: "反重力髮膠", desc: "你的頭髮會直直地朝向天空。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 2, timeRange: [46, 60] } },
                 { id: 209, name: "小幸運汽水", desc: "今天可能會在路上撿到一枚硬幣。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 2, timeRange: [61, 75] } },
                 { id: 210, name: "平淡無奇湯", desc: "味道不差，但也沒有什麼特別之處。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 2, timeRange: [76, 9999] } },
                 { id: 211, name: "舌頭打結藥水", desc: "讓你暫時說話口齒不清。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 1, timeRange: [0, 30] } },
                 { id: 212, name: "尷尬紅暈霜", desc: "臉頰會不由自主地變紅。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 1, timeRange: [31, 45] } },
-                { id: 213, name: "磁力干擾劑", desc: "你身邊的湯匙和叉子會輕微顫抖。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 1, timeRange: [46, 60] } },
+                { id: 213, name: "磁力干擾劑", desc: "你身邊の湯匙和叉子會輕微顫抖。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 1, timeRange: [46, 60] } },
                 { id: 214, name: "易怒辣椒油", desc: "喝下後，一點小事就可能讓你生氣。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 1, timeRange: [61, 75] } },
-                { id: 215, name: "煮沸的泥水", desc: "看起來不太能喝的樣子...", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 1, timeRange: [76, 9999] } },
+                { id: 215, name: "煮沸の泥水", desc: "看起來不太能喝の樣子...", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 1, timeRange: [76, 9999] } },
                 { id: 221, name: "反向思維糖漿", desc: "你想往左，身體就往右。你想說'是'，嘴巴就說'否'。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 0, timeRange: [0, 30] } },
                 { id: 222, name: "萬物黏著劑", desc: "你的手掌變得極度黏稠，所有東西拿起來就放不下了。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 0, timeRange: [31, 45] } },
                 { id: 223, name: "存在感稀釋液", desc: "人們會下意識忽略你，甚至會直接從你身體穿過去。", unlocked: false, unlockConditions: { difficulty: 'novice', stars: 0, timeRange: [46, 60] } },
@@ -65448,89 +65448,89 @@
                 { id: 301, name: "語言通曉藥劑", desc: "一個小時內，你能聽懂並說出任何一種語言。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 3, timeRange: [0, 50] } },
                 { id: 302, name: "靈感之泉", desc: "文思泉湧，創意不斷！非常適合寫作和藝術創作。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 3, timeRange: [51, 70] } },
                 { id: 303, name: "鷹眼精華", desc: "你的視力會變得像老鷹一樣敏銳。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 3, timeRange: [71, 90] } },
-                { id: 304, name: "福靈劑", desc: "在接下來的一段時間裡，你會事事順利。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 3, timeRange: [91, 120] } },
+                { id: 304, name: "福靈劑", desc: "在接下來の一段時間裡，你會事事順利。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 3, timeRange: [91, 120] } },
                 { id: 305, name: "貓之敏捷", desc: "你的動作變得像貓一樣輕盈敏捷。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 3, timeRange: [121, 9999] } },
-                { id: 306, name: "夢境漫遊劑", desc: "今晚你可以控制自己的夢境。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 2, timeRange: [0, 50] } },
-                { id: 307, name: "回聲糖漿", desc: "你說的每句話都會延遲一秒後重複一次。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 2, timeRange: [51, 70] } },
-                { id: 308, name: "氣味幻象劑", desc: "你可以讓周圍的人聞到任何你想像的味道。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 2, timeRange: [71, 90] } },
+                { id: 306, name: "夢境漫遊劑", desc: "今晚你可以控制自己の夢境。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 2, timeRange: [0, 50] } },
+                { id: 307, name: "回聲糖漿", desc: "你說の每句話都會延遲一秒後重複一次。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 2, timeRange: [51, 70] } },
+                { id: 308, name: "氣味幻象劑", desc: "你可以讓周圍の人聞到任何你想像の味道。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 2, timeRange: [71, 90] } },
                 { id: 309, name: "短暫隱形噴霧", desc: "可以隱形十秒鐘，時間一到就會現形。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 2, timeRange: [91, 120] } },
                 { id: 310, name: "變調藥水", desc: "你的聲音音調會隨機忽高忽低。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 2, timeRange: [121, 9999] } },
-                { id: 311, name: "黏呼呼之觸", desc: "你碰到的所有東西都會變得有點黏。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 1, timeRange: [0, 50] } },
+                { id: 311, name: "黏呼呼之觸", desc: "你碰到の所有東西都會變得有點黏。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 1, timeRange: [0, 50] } },
                 { id: 312, name: "增髮藥劑(副作用)", desc: "頭髮長得很快，但眉毛和鼻毛也一樣。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 1, timeRange: [51, 70] } },
-                { id: 313, name: "色彩失真鏡片", desc: "你眼中的世界暫時失去了所有色彩。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 1, timeRange: [71, 90] } },
-                { id: 314, name: "無感藥劑", desc: "暫時嚐不出任何食物的味道。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 1, timeRange: [91, 120] } },
-                { id: 315, name: "爆炸失敗的藥渣", desc: "發出一聲悶響和一縷黑煙，什麼也沒發生。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 1, timeRange: [121, 9999] } },
+                { id: 313, name: "色彩失真鏡片", desc: "你眼中の世界暫時失去了所有色彩。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 1, timeRange: [71, 90] } },
+                { id: 314, name: "無感藥劑", desc: "暫時嚐不出任何食物の味道。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 1, timeRange: [91, 120] } },
+                { id: 315, name: "爆炸失敗の藥渣", desc: "發出一聲悶響和一縷黑煙，什麼也沒發生。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 1, timeRange: [121, 9999] } },
                 { id: 321, name: "動物語言(副作用版)", desc: "你聽得懂動物說話，但牠們都在嘲笑你的髮型。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 0, timeRange: [0, 50] } },
-                { id: 322, name: "無重力藥水", desc: "你和周遭的所有物品都開始漂浮在空中，場面一片混亂。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 0, timeRange: [51, 70] } },
+                { id: 322, name: "無重力藥水", desc: "你和周遭の所有物品都開始漂浮在空中，場面一片混亂。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 0, timeRange: [51, 70] } },
                 { id: 323, name: "性別轉換劑(不穩定)", desc: "你的性別每五分鐘變換一次，持續一整天。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 0, timeRange: [71, 90] } },
                 { id: 324, name: "絕對霉運藥劑", desc: "走路會平地摔，喝水會嗆到，出門會被鳥屎滴到。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 0, timeRange: [91, 120] } },
-                { id: 325, name: "煉金術的背叛", desc: "你試圖點石成金，結果把金幣變成了石頭。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 0, timeRange: [121, 9999] } },
+                { id: 325, name: "煉金術の背叛", desc: "你試圖點石成金，結果把金幣變成了石頭。", unlocked: false, unlockConditions: { difficulty: 'mage', stars: 0, timeRange: [121, 9999] } },
 
                 // --- 有點厲害煉藥師 (10題) ---
-                { id: 401, name: "智慧賢者之釀", desc: "傳說中的魔藥，能讓你窺見知識的真理。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 3, timeRange: [0, 60] } },
+                { id: 401, name: "智慧賢者之釀", desc: "傳說中の魔藥，能讓你窺見知識の真理。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 3, timeRange: [0, 60] } },
                 { id: 402, name: "時間旅人沙漏", desc: "可以讓時間暫停五秒鐘。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 3, timeRange: [61, 90] } },
-                { id: 403, name: "元素親和劑", desc: "讓你能夠與風、水、火、土進行簡單的交流。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 3, timeRange: [91, 120] } },
+                { id: 403, name: "元素親和劑", desc: "讓你能夠與風、水、火、土進行簡單の交流。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 3, timeRange: [91, 120] } },
                 { id: 404, name: "萬物變形水", desc: "可以將一塊石頭變成一塊麵包，或是一隻蝴蝶。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 3, timeRange: [121, 160] } },
-                { id: 405, name: "守護者星塵", desc: "一道溫和的光芒環繞著你，為你抵擋一次小小的厄運。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 3, timeRange: [161, 9999] } },
-                { id: 406, name: "心靈感應露水", desc: "可以模糊地感應到周遭人的情緒。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 2, timeRange: [0, 60] } },
+                { id: 405, name: "守護者星塵", desc: "一道溫和の光芒環繞著你，為你抵擋一次小小の厄運。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 3, timeRange: [161, 9999] } },
+                { id: 406, name: "心靈感應露水", desc: "可以模糊地感應到周遭人の情緒。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 2, timeRange: [0, 60] } },
                 { id: 407, name: "魅影步伐", desc: "走路時完全不會發出聲音。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 2, timeRange: [61, 90] } },
-                { id: 408, name: "雙倍生長劑", desc: "澆在植物上，它的大小會變成兩倍。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 2, timeRange: [91, 120] } },
-                { id: 409, name: "天氣預報糖", desc: "嚐起來的味道會預示明天的天氣，酸是下雨，甜是晴天。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 2, timeRange: [121, 160] } },
-                { id: 410, name: "永恆泡沫", desc: "吹出來的泡泡永遠不會破掉。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 2, timeRange: [161, 9999] } },
+                { id: 408, name: "雙倍生長劑", desc: "澆在植物上，它の大小會變成兩倍。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 2, timeRange: [91, 120] } },
+                { id: 409, name: "天氣預報糖", desc: "嚐起來の味道會預示明天天氣，酸是下雨，甜是晴天。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 2, timeRange: [121, 160] } },
+                { id: 410, name: "永恆泡沫", desc: "吹出來の泡泡永遠不會破掉。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 2, timeRange: [161, 9999] } },
                 { id: 411, name: "萬能鑰匙(仿)", desc: "看起來像萬能鑰匙，但其實什麼鎖都打不開。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 1, timeRange: [0, 60] } },
                 { id: 412, name: "引力逆轉劑(微量)", desc: "你的頭髮會飄起來，僅此而已。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 1, timeRange: [61, 90] } },
                 { id: 413, name: "縮小藥水(不穩定)", desc: "你的小指頭縮小了一半，幾分鐘後又變回來了。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 1, timeRange: [91, 120] } },
                 { id: 414, "name": "遺忘之霧", "desc": "呃...我剛剛想說什麼來著？", "unlocked": false, "unlockConditions": { "difficulty": "alchemist", "stars": 1, "timeRange": [121, 160] } },
-                { id: 415, name: "一鍋混沌", desc: "所有材料胡亂地混在一起，發出奇怪的顏色和氣味。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 1, timeRange: [161, 9999] } },
+                { id: 415, name: "一鍋混沌", desc: "所有材料胡亂地混在一起，發出奇怪の顏色和氣味。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 1, timeRange: [161, 9999] } },
                 { id: 421, name: "時間錯亂雞尾酒", desc: "你的時間感完全錯亂，一秒鐘感覺像一小時，一小時又感覺像一秒。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 0, timeRange: [0, 60] } },
-                { id: 422, name: "次元裂縫產生器", desc: "在你面前憑空出現一個小裂縫，裡面會隨機掉出奇怪的東西，比如一隻襪子或半個甜甜圈。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 0, timeRange: [61, 90] } },
+                { id: 422, name: "次元裂縫產生器", desc: "在你面前憑空出現一個小裂縫，裡面會隨機掉出奇怪の東西，比如一隻襪子或半個甜甜圈。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 0, timeRange: [61, 90] } },
                 { id: 423, name: "物理法則無視液", desc: "你試圖穿牆，結果成功地卡在牆壁裡了。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 0, timeRange: [91, 120] } },
-                { id: 424, name: "墨菲定律藥水", desc: "所有可能出錯的事情，都會在你身上以最糟糕的方式出錯。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 0, timeRange: [121, 160] } },
-                { id: 425, name: "哲學家的空瓶", desc: "瓶子裡什麼都沒有，但它引發了你對存在與虛無的深刻思考。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 0, timeRange: [161, 9999] } },
+                { id: 424, name: "墨菲定律藥水", desc: "所有可能出錯の事情，都會在你身上以最糟糕の方式出錯。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 0, timeRange: [121, 160] } },
+                { id: 425, name: "哲學家の空瓶", desc: "瓶子裡什麼都沒有，但它引發了你對存在與虛無の深刻思考。", unlocked: false, unlockConditions: { difficulty: 'alchemist', stars: 0, timeRange: [161, 9999] } },
 
                 // --- 魔法學院長老 (15題) ---
-                { id: 501, name: "龍之息吹精油", desc: "讓你呼出的氣息帶有火焰的溫熱與硫磺的氣味。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 3, timeRange: [0, 100] } },
-                { id: 502, name: "月光低語藥劑", desc: "在月光下，你能聽見古老星辰的故事。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 3, timeRange: [101, 140] } },
+                { id: 501, name: "龍之息吹精油", desc: "讓你呼出の氣息帶有火焰の溫熱與硫磺の氣味。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 3, timeRange: [0, 100] } },
+                { id: 502, name: "月光低語藥劑", desc: "在月光下，你能聽見古老星辰の故事。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 3, timeRange: [101, 140] } },
                 { id: 503, name: "深海寧靜之淚", desc: "讓你的心靈如深海般平靜，不受任何紛擾。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 3, timeRange: [141, 180] } },
-                { id: 504, name: "鳳凰羽燼", desc: "一小撮灰燼，卻蘊含著浴火重生的力量。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 3, timeRange: [181, 220] } },
-                { id: 505, name: "蓋亞之心碎片", desc: "能感受到大地的脈動，與自然合而為一。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 3, timeRange: [221, 9999] } },
-                { id: 506, name: "人魚之歌喉糖", desc: "讓你的歌聲帶有迷惑人心的魔力，但五音不全者慎用。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 2, timeRange: [0, 100] } },
+                { id: 504, name: "鳳凰羽燼", desc: "一小撮灰燼，卻蘊含著浴火重生の力量。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 3, timeRange: [181, 220] } },
+                { id: 505, name: "蓋亞之心碎片", desc: "能感受到大地の脈動，與自然合而為一。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 3, timeRange: [221, 9999] } },
+                { id: 506, name: "人魚之歌喉糖", desc: "讓你的歌聲帶有迷惑人心の魔力，但五音不全者慎用。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 2, timeRange: [0, 100] } },
                 { id: 507, name: "石化皮膚藥水(短效)", desc: "皮膚短時間內變得像石頭一樣堅硬，但也一樣笨重。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 2, timeRange: [101, 140] } },
                 { id: 508, name: "巨人力量濃湯", desc: "力氣變大，但腦筋也變得有點不太靈光。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 2, timeRange: [141, 180] } },
                 { id: 509, name: "漂浮棉花糖", desc: "能讓你離地三公分漂浮，直到你打個嗝。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 2, timeRange: [181, 220] } },
                 { id: 510, name: "賢者之石(仿製品)", desc: "看起來金光閃閃，但其實是黃鐵礦。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 2, timeRange: [221, 9999] } },
                 { id: 511, name: "哥布林臭屁藥水", desc: "...這味道永生難忘。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 1, timeRange: [0, 100] } },
-                { id: 512, name: "沼澤泥漿浴鹽", desc: "泡完後身上會長出幾朵無害的小蘑菇。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 1, timeRange: [101, 140] } },
-                { id: 513, name: "說反話糖漿", desc: "接下來一個小時，你說的話都會是反義詞。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 1, timeRange: [141, 180] } },
-                { id: 514, name: "無盡噴嚏粉", desc: "每一次呼吸都可能觸發一次驚天動地的噴嚏。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 1, timeRange: [181, 220] } },
-                { id: 515, name: "失敗的奇蹟", desc: "雖然什麼效果都沒有，但瓶子本身很好看。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 1, timeRange: [221, 9999] } },
-                { id: 521, name: "龍之...呃...哈啾", desc: "你打了一個驚天動地的噴嚏，威力堪比龍息，吹飛了房間裡所有東西。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 0, timeRange: [0, 100] } },
+                { id: 512, name: "沼澤泥漿浴鹽", desc: "泡完後身上會長出幾朵無害の小蘑菇。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 1, timeRange: [101, 140] } },
+                { id: 513, name: "說反話糖漿", desc: "接下來一個小時，你說の話都會是反義詞。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 1, timeRange: [141, 180] } },
+                { id: 514, name: "無盡噴嚏粉", desc: "每一次呼吸都可能觸發一次驚天動地の噴嚏。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 1, timeRange: [181, 220] } },
+                { id: 515, name: "失敗の奇蹟", desc: "雖然什麼效果都沒有，但瓶子本身很好看。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 1, timeRange: [221, 9999] } },
+                { id: 521, name: "龍之...呃...哈啾", desc: "你打了一個驚天動地の噴嚏，威力堪比龍息，吹飛了房間裡所有東西。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 0, timeRange: [0, 100] } },
                 { id: 522, name: "深淵凝望之眼", desc: "當你凝望深淵時，深淵給了你一個白眼然後走開了。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 0, timeRange: [101, 140] } },
                 { id: 523, name: "神格分裂劑", desc: "你的左手認為自己是智慧之神，右手認為自己是戰爭之神，然後它們就打起來了。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 0, timeRange: [141, 180] } },
-                { id: 524, name: "因果報應加速器", desc: "你剛才想的壞念頭立刻就得到了報應。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 0, timeRange: [181, 220] } },
-                { id: 525, name: "造物主的玩笑", desc: "你創造出了一個有生命的...馬桶刷。它看起來不太開心。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 0, timeRange: [221, 9999] } },
+                { id: 524, name: "因果報應加速器", desc: "你剛才想の壞念頭立刻就得到了報應。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 0, timeRange: [181, 220] } },
+                { id: 525, name: "造物主の玩笑", desc: "你創造出了一個有生命の...馬桶刷。它看起來不太開心。", unlocked: false, unlockConditions: { difficulty: 'elder', stars: 0, timeRange: [221, 9999] } },
 
                 // --- 魔藥煉製專精大師 (20題) ---
-                { id: 601, name: "時光洪流之粹", desc: "凝視藥水，能看見過去一分鐘的殘影。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 3, timeRange: [0, 150] } },
+                { id: 601, name: "時光洪流之粹", desc: "凝視藥水，能看見過去一分鐘の殘影。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 3, timeRange: [0, 150] } },
                 { id: 602, name: "星界旅行藥劑", desc: "閉上眼，你的靈魂能短暫遨遊於星辰之間。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 3, timeRange: [151, 200] } },
-                { id: 603, name: "混沌之心", desc: "蘊含著創造與毀滅的原始力量，極度不穩定。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 3, timeRange: [201, 250] } },
-                { id: 604, name: "世界樹之露", desc: "一滴就能讓枯木逢春，蘊含著生命的原初之力。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 3, timeRange: [251, 300] } },
-                { id: 605, name: "真理靈藥", desc: "喝下它，你將會理解宇宙間的一個隨機真理。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 3, timeRange: [301, 9999] } },
+                { id: 603, name: "混沌之心", desc: "蘊含著創造與毀滅の原始力量，極度不穩定。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 3, timeRange: [201, 250] } },
+                { id: 604, name: "世界樹之露", desc: "一滴就能讓枯木逢春，蘊含著生命の原初之力。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 3, timeRange: [251, 300] } },
+                { id: 605, name: "真理靈藥", desc: "喝下它，你將會理解宇宙間の一個隨機真理。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 3, timeRange: [301, 9999] } },
                 { id: 606, name: "四次元口袋噴霧", desc: "能將一個口袋暫時變成四次元空間，但東西可能再也拿不出來。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 2, timeRange: [0, 150] } },
-                { id: 607, name: "可能性之水", desc: "喝下後，你擲硬幣永遠是立起來的。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 2, timeRange: [151, 200] } },
-                { id: 608, name: "作者權威藥劑", desc: "短時間內，你可以修改身邊非生命物體的一個小屬性。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 2, timeRange: [201, 250] } },
-                { id: 609, name: "絕對音感糖漿", desc: "能聽出所有聲音的音高，包括別人的心跳聲。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 2, timeRange: [251, 300] } },
-                { id: 610, name: "瓶中銀河", desc: "美麗，卻只是個華而不實的裝飾品。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 2, timeRange: [301, 9999] } },
+                { id: 607, name: "可能性之水", desc: "喝下後，你擲硬幣永遠是立起來の。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 2, timeRange: [151, 200] } },
+                { id: 608, name: "作者權威藥劑", desc: "短時間內，你可以修改身邊非生命物體の一個小屬性。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 2, timeRange: [201, 250] } },
+                { id: 609, name: "絕對音感糖漿", desc: "能聽出所有聲音の音高，包括別人の心跳聲。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 2, timeRange: [251, 300] } },
+                { id: 610, name: "瓶中銀河", desc: "美麗，卻只是個華而不實の裝飾品。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 2, timeRange: [301, 9999] } },
                 { id: 611, name: "存在感消失劑", desc: "你還在這裡，但所有人都會下意識地忽略你。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 1, timeRange: [0, 150] } },
-                { id: 612, name: "物理法則破壞劑(劣質)", desc: "你面前的桌子可能會短路、當機、需要重開機。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 1, timeRange: [151, 200] } },
+                { id: 612, name: "物理法則破壞劑(劣質)", desc: "你面前の桌子可能會短路、當機、需要重開機。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 1, timeRange: [151, 200] } },
                 { id: 613, name: "形上學義大利麵", desc: "它既存在又不存在，你永遠吃不到它。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 1, timeRange: [201, 250] } },
-                { id: 614, name: "薛丁格的藥水", desc: "在打開瓶蓋前，你永遠不知道它有沒有毒。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 1, timeRange: [251, 300] } },
+                { id: 614, name: "薛丁格の藥水", desc: "在打開瓶蓋前，你永遠不知道它有沒有毒。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 1, timeRange: [251, 300] } },
                 { id: 615, name: "宇宙大爆炸殘渣", desc: "一無所有，萬物之始，空空如也。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 1, timeRange: [301, 9999] } },
-                { id: 621, name: "現實扭曲場(失控版)", desc: "你周遭的現實變得像卡通一樣，物理法則完全失效。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [0, 150] } },
-                { id: 622, name: "第四面牆破除劑", desc: "你突然意識到自己只是遊戲中的一個角色，並陷入了深刻的存在危機。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [151, 200] } },
-                { id: 623, name: "宇宙弦撥弄液", desc: "你試圖撥動宇宙的琴弦，結果發出了刺耳的噪音，讓全宇宙都頭痛。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [201, 250] } },
-                { id: 624, name: "蝴蝶效應放大器", desc: "你打了個噴嚏，結果在世界的另一端引發了一場荒謬的貓狗大戰。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [251, 300] } },
-                { id: 625, name: "無", desc: "瓶子裡什麼都沒有。不是空的，是'無'。一種形而上的、令人不安的'無'。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [301, 9999] } }
+                { id: 621, name: "現實扭曲場(失控版)", desc: "你周遭の現實變得像卡通一樣，物理法則完全失效。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [0, 150] } },
+                { id: 622, name: "第四面牆破除劑", desc: "你突然意識到自己只是遊戲中の一個角色，並陷入了深刻の存在危機。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [151, 200] } },
+                { id: 623, name: "宇宙弦撥弄液", desc: "你試圖撥動宇宙の琴弦，結果發出了刺耳の噪音，讓全宇宙都頭痛。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [201, 250] } },
+                { id: 624, name: "蝴蝶效應放大器", desc: "你打了個噴嚏，結果在世界の另一端引發了一場荒謬の貓狗大戰。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [251, 300] } },
+                { id: 625, name: "無", desc: "瓶子裡什麼都沒有。不是空の，是'無'。一種形而上の、令人不安の'無'。", unlocked: false, unlockConditions: { difficulty: 'master', stars: 0, timeRange: [301, 9999] } }
              ];
             
             function shuffleArray(array) {
@@ -65741,7 +65741,7 @@
                             // 使用 'if' 檢查確保泡泡元素仍然存在
                             if (state.selectedBubble) state.selectedBubble.classList.remove('shake-anim');
                             if (targetBubble) targetBubble.classList.remove('shake-anim');
-                        }, 50); // 動畫持續 0.05s
+                        }, 10); // 動畫持續 0.01s
                     }
                 }
 
@@ -65802,7 +65802,7 @@
                 let baseProb;
                 const isLowerDifficulty = difficulty === 'trainee' || difficulty === 'novice';
 
-                // 檢查是否為需要調整機率的較低難度，且不為0星魔藥
+                // 檢查是否為需要調整機率の較低難度，且不為0星魔藥
                 if (isLowerDifficulty && stars > 0) {
                     switch (stars) {
                         case 3: baseProb = 65; break; // 原始 80% - 15%
@@ -65852,9 +65852,9 @@
                     dom.noRewardSection.classList.remove('hidden');
                     const noRewardP = dom.noRewardSection.querySelector('p');
                     if (unlockResult.message === 'failure') {
-                        noRewardP.innerHTML = `真可惜！差一點就成功了...<br>下次獲得魔藥的機率將會提升 5%！`;
+                        noRewardP.innerHTML = `真可惜！差一點就成功了...<br>下次獲得魔藥の機率將會提升 5%！`;
                     } else { // 'no_potion' or 'already_unlocked'
-                        noRewardP.innerHTML = `表現不錯！但這次沒有解鎖新的魔藥，再接再厲！`;
+                        noRewardP.innerHTML = `表現不錯！但這次沒有解鎖新の魔藥，再接再厲！`;
                     }
                 }
                 
@@ -65879,7 +65879,7 @@
                         const starText = '★'.repeat(cond.stars) + '☆'.repeat(3 - cond.stars);
                         const timeText = `${cond.timeRange[0]} - ${cond.timeRange[1]} 秒`;
                         item.className = "bg-gray-900/50 rounded-lg p-4 border border-gray-600 text-left opacity-60";
-                        item.innerHTML = `<h3 class="text-xl font-bold text-gray-500">未解鎖的魔藥</h3><p class="text-gray-500 mt-2"><span class="font-semibold">條件:</span> ${difficultyText} | <span class="text-yellow-400">${starText}</span> | ${timeText}</p>`;
+                        item.innerHTML = `<h3 class="text-xl font-bold text-gray-500">未解鎖の魔藥</h3><p class="text-gray-500 mt-2"><span class="font-semibold">條件:</span> ${difficultyText} | <span class="text-yellow-400">${starText}</span> | ${timeText}</p>`;
                     }
                     grid.appendChild(item);
                 });
