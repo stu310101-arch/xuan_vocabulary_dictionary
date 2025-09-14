@@ -418,7 +418,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-lg max-w-lg w-full max-h-[90vh] flex flex-col">
                 <h3 id="word-form-title" class="text-2xl font-bold mb-4 text-center" style="color: var(--color-purple);"></h3>
                 <div class="overflow-y-auto flex-grow pr-4 space-y-4">
-                    <div><label class="font-semibold">英文單字</label><input type="text" id="word-form-en" class="w-full p-2 border rounded mt-1 bg-gray-200" disabled></div>
+                    <div><label class="font-semibold">英文單字 <span class="text-red-500">*</span></label><input type="text" id="word-form-en" class="w-full p-2 border rounded mt-1"></div>
                     
                     <div id="definitions-container" class="space-y-4">
                         <!-- JS will inject definition blocks here -->
@@ -438,9 +438,10 @@
         <div id="add-to-favorite-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
             <div class="bg-white p-8 rounded-2xl shadow-lg text-center max-w-lg w-full">
                 <h3 class="text-2xl font-bold mb-6" style="color: var(--color-text-dark);">選擇要加入的資料夾</h3>
-                <div id="favorite-modal-folders" class="grid grid-cols-3 gap-4 mb-6">
-                    <!-- JS will inject definition blocks here -->
+                <div id="favorite-modal-folders" class="mb-6">
+                    <!-- JS will inject content here -->
                 </div>
+                 <!-- JS will inject buttons here -->
             </div>
         </div>
         <!-- 確認視窗 (通用) -->
@@ -451,6 +452,17 @@
                 <div class="flex justify-center gap-4">
                     <button id="confirm-modal-yes" class="btn btn-pink px-10 py-3 text-lg">是</button>
                     <button onclick="closeModal('confirm-modal')" class="btn btn-purple px-10 py-3 text-lg">否</button>
+                </div>
+            </div>
+        </div>
+        <!-- 新增單字成功視窗 -->
+        <div id="success-add-word-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div class="bg-white p-8 rounded-2xl shadow-lg text-center max-w-sm w-full">
+                <h3 id="success-add-word-title" class="text-2xl font-bold mb-4 text-green-500">新增成功！</h3>
+                <p id="success-add-word-text" class="text-lg mb-6"></p>
+                <div class="flex flex-col gap-4">
+                    <button id="success-modal-view" class="btn btn-pink w-full py-3 text-lg">查看單字</button>
+                    <button id="success-modal-home" class="btn btn-purple w-full py-3 text-lg">返回主頁</button>
                 </div>
             </div>
         </div>
@@ -32976,7 +32988,7 @@
         }
       },
       {
-        "pos": "(v.)",
+        "pos": "(引擎)",
         "meaning": "空轉",
         "example": {
           "en": "He left the car engine idling while he waited.",
@@ -64046,6 +64058,7 @@
       "N/A"
     ]
   }
+
         ];
 
         // --- 全域變數和狀態管理 ---
@@ -64120,8 +64133,26 @@
             }
         }
 
+        function cleanupActiveGames() {
+            // 停止氣球遊戲
+            if (balloonGameManager && typeof balloonGameManager.stop === 'function') {
+                balloonGameManager.stop();
+            }
+            // 停止怪物遊戲
+            if (monsterGameManager && typeof monsterGameManager.stop === 'function') {
+                monsterGameManager.stop();
+            }
+            // 停止魔藥遊戲
+            if (window.potionGame && typeof window.potionGame.end === 'function') {
+                window.potionGame.end();
+            }
+        }
+
         // --- 頁面導航 & 彈出視窗 ---
-        function showPage(pageId) {
+        function _displayPage(pageId) {
+            cleanupActiveGames(); // 在切換頁面前，先停止所有活動中的遊戲
+
+            // 這是顯示/隱藏頁面的核心功能，不涉及 history 操作
             document.querySelectorAll('#app > div, .monster-game-screen, #potion-game-wrapper').forEach(page => page.classList.add('hidden'));
             const targetPage = document.getElementById(pageId);
             if (targetPage) targetPage.classList.remove('hidden');
@@ -64137,6 +64168,34 @@
                 document.getElementById('fx-container').innerHTML = '';
             }
             if (pageId === 'success-page') triggerSuccessPageConfetti();
+        }
+
+        function showPage(pageId) {
+            // 這個函式處理使用者導航行為，並更新瀏覽器歷史紀錄
+            const currentPage = window.location.hash.substring(1);
+            if (pageId === currentPage) return; // 如果已經在當前頁面，則不執行任何操作
+
+            _displayPage(pageId);
+
+            const pageTitles = {
+                'home-page': '英文單字隨身GO',
+                'learn-main-page': '選擇學習單元',
+                'learn-minor-page': '選擇小單元',
+                'flashcard-page': '單字卡學習',
+                'favorite-folders-page': '最愛資料夾',
+                'search-results-page': '搜尋結果',
+                'no-results-page': '查無單字',
+                'practice-setup-page': '練習設定',
+                'balloon-game-page': '射氣球遊戲',
+                'monster-setup-page': '怪獸挑戰設定',
+                'monster-game-page': '怪獸挑戰',
+                'monster-win-page': '挑戰成功',
+                'monster-lose-page': '挑戰失敗',
+                'potion-game-wrapper': '魔藥煉製'
+            };
+            const title = pageTitles[pageId] || '英文單字學習';
+            history.pushState({ pageId: pageId }, title, `#${pageId}`);
+            document.title = title;
         }
 
         function openModal(modalId) { document.getElementById(modalId).classList.remove('hidden'); }
@@ -64273,7 +64332,7 @@
                 <button onclick="this.parentElement.remove()" class="absolute top-4 right-0 text-red-400 hover:text-red-600 text-lg"><i class="fas fa-times-circle"></i></button>
                 <div><label class="font-semibold">詞性 <span class="text-red-500">*</span></label><input type="text" class="new-word-pos w-full p-2 border rounded mt-1" placeholder="n., v., adj..." value="${pos}"></div>
                 <div class="mt-2"><label class="font-semibold">中文意思 <span class="text-red-500">*</span></label><input type="text" class="new-word-meaning w-full p-2 border rounded mt-1" placeholder="請輸入中文意思..." value="${definition.meaning || ''}"></div>
-                <div class="mt-2"><label class="font-semibold">英文例句 <span class="text-red-500">*</span></label><textarea class="new-word-ex-en w-full p-2 border rounded mt-1" rows="2" placeholder="請輸入英文例句...">${(definition.example && definition.example.en) || ''}</textarea></div>
+                <div class="mt-2"><label class="font-semibold">英文例句</label><textarea class="new-word-ex-en w-full p-2 border rounded mt-1" rows="2" placeholder="請輸入英文例句...">${(definition.example && definition.example.en) || ''}</textarea></div>
                 <div class="mt-2"><label class="font-semibold">中文例句</label><textarea class="new-word-ex-zh w-full p-2 border rounded mt-1" rows="2" placeholder="請輸入中文例句...">${(definition.example && definition.example.zh) || ''}</textarea></div>
             `;
             container.appendChild(block);
@@ -64301,8 +64360,8 @@
                 const exEnInput = block.querySelector('.new-word-ex-en').value.trim();
                 const exZhInput = block.querySelector('.new-word-ex-zh').value.trim();
 
-                if (!posInput || !meaningInput || !exEnInput) {
-                    alert(`定義 ${i+1} 中有必填欄位（詞性、中文意思、英文例句）未填寫！`);
+                if (!posInput || !meaningInput) {
+                    alert(`定義 ${i+1} 中有必填欄位（詞性、中文意思）未填寫！`);
                     return null;
                 }
                 if (!validPOSRegex.test(posInput)) {
@@ -64313,10 +64372,7 @@
                     alert(`定義 ${i+1} 的「中文意思」只能包含中文字元。`);
                     return null;
                 }
-                if (!validEnglishTextRegex.test(exEnInput)) {
-                    alert(`定義 ${i+1} 的「英文例句」包含無效字元。`);
-                    return null;
-                }
+                
                 if (exZhInput && !validMixedTextRegex.test(exZhInput)) {
                     alert(`定義 ${i+1} 的「中文例句」包含無效字元。`);
                     return null;
@@ -64340,12 +64396,35 @@
             };
         }
 
+        function showSuccessAddWordModal(word) {
+            document.getElementById('success-add-word-text').textContent = `已成功新增單字 "${word}"！`;
+            document.getElementById('success-modal-view').onclick = () => {
+                closeModal('success-add-word-modal');
+                searchWordWithValue(word);
+            };
+            document.getElementById('success-modal-home').onclick = () => {
+                closeModal('success-add-word-modal');
+                showPage('home-page');
+            };
+            openModal('success-add-word-modal');
+        }
+
         function saveNewWord() {
             const wordData = validateAndGetWordFormData();
             if (!wordData) return;
 
+            const newWordValue = document.getElementById('word-form-en').value.trim();
+            if (!newWordValue) {
+                alert('英文單字欄位不可為空！');
+                return;
+            }
+            if (vocabulary.some(w => w.word.toLowerCase() === newWordValue.toLowerCase())) {
+                alert('此單字已存在於資料庫中！');
+                return;
+            }
+
             const newWord = {
-                word: document.getElementById('word-form-en').value,
+                word: newWordValue,
                 definitions: wordData.definitions,
                 synonyms: wordData.synonyms
             };
@@ -64355,26 +64434,59 @@
             organizeAndSortWords();
             saveData();
             closeModal('word-form-modal');
-            searchWordWithValue(newWord.word);
+            showSuccessAddWordModal(newWord.word);
         }
 
-        function saveWordChanges(originalWord) {
+        function saveWordChanges(originalWordString) {
             const wordData = validateAndGetWordFormData();
             if (!wordData) return;
+
+            const newWordValue = document.getElementById('word-form-en').value.trim();
+            if (!newWordValue) {
+                alert('英文單字欄位不可為空！');
+                return;
+            }
             
-            const wordIndex = vocabulary.findIndex(w => w.word === originalWord);
+            // 只有在單字變更時，才檢查是否與資料庫中其他單字重複
+            if (newWordValue.toLowerCase() !== originalWordString.toLowerCase() && vocabulary.some(w => w.word.toLowerCase() === newWordValue.toLowerCase())) {
+                alert('您修改的單字名稱已存在於資料庫中！');
+                return;
+            }
+
+            const wordIndex = vocabulary.findIndex(w => w.word === originalWordString);
             if (wordIndex === -1) {
                 alert('儲存失敗：找不到原始單字。');
                 return;
             }
             
-            vocabulary[wordIndex].definitions = wordData.definitions;
-            vocabulary[wordIndex].synonyms = wordData.synonyms;
+            const updatedWordObject = vocabulary[wordIndex];
+            updatedWordObject.word = newWordValue;
+            updatedWordObject.definitions = wordData.definitions;
+            updatedWordObject.synonyms = wordData.synonyms;
             
-            organizeAndSortWords();
+            // 如果單字名稱改變了，需要同步更新其他地方的紀錄
+            if (newWordValue !== originalWordString) {
+                if (userAddedWordsSet.has(originalWordString)) {
+                    userAddedWordsSet.delete(originalWordString);
+                    userAddedWordsSet.add(newWordValue);
+                }
+                favoriteFolders.forEach(folder => {
+                    if (folder.has(originalWordString)) {
+                        folder.delete(originalWordString);
+                        folder.add(newWordValue);
+                    }
+                });
+                 // 同時更新目前單元檢視中的單字物件，以確保畫面即時刷新
+                const currentUnitIndex = currentFlashcardUnit.findIndex(w => w.word === originalWordString);
+                if (currentUnitIndex !== -1) {
+                    currentFlashcardUnit[currentUnitIndex] = updatedWordObject;
+                }
+            }
+            
+            organizeAndSortWords(); // 重新組織與排序單字庫
             saveData();
             closeModal('word-form-modal');
-            displayCard(); // Refresh current card
+            displayCard(); // 重新渲染目前的單字卡
         }
 
         function searchWordWithValue(wordValue) {
@@ -64635,44 +64747,68 @@
         }
 
         function handleFavoriteClick() {
-            const wordToHandle = currentWordObject.word;
-            const isFav = favoriteFolders.some(folder => folder.has(wordToHandle));
-            if (isFav) {
-                favoriteFolders.forEach(folder => folder.delete(wordToHandle));
-                organizeAndSortWords();
-                saveData();
-                updateFavoriteButtonState();
-            } else {
-                openAddToFavoriteModal(false);
-            }
+            openAddToFavoriteModal(false);
         }
 
         function openAddToFavoriteModal(isBatch = false) {
+            const modalContent = document.querySelector('#add-to-favorite-modal > div');
             const container = document.getElementById('favorite-modal-folders');
             container.innerHTML = '';
-             for (let i = 0; i < 5; i++) {
-                const btn = document.createElement('button');
-                btn.className = 'btn btn-blue';
-                btn.textContent = `資料夾 ${i+1}`;
-                if (isBatch) {
+            // Remove any existing buttons first
+            modalContent.querySelector('.modal-buttons')?.remove();
+
+            if (isBatch) {
+                modalContent.querySelector('h3').textContent = '選擇要整批加入的資料夾';
+                container.className = 'grid grid-cols-3 gap-4 mb-6';
+                for (let i = 0; i < 5; i++) {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-blue';
+                    btn.textContent = `資料夾 ${i+1}`;
                     btn.onclick = () => addAllCurrentWordsToFavorite(i);
-                } else {
-                    btn.onclick = () => addToFavorite(i);
+                    container.appendChild(btn);
                 }
-                container.appendChild(btn);
+            } else {
+                modalContent.querySelector('h3').textContent = '管理最愛資料夾 (可複選)';
+                container.className = 'space-y-3 mb-6 text-left';
+                const word = currentWordObject.word;
+
+                for (let i = 0; i < 5; i++) {
+                    const isChecked = favoriteFolders[i].has(word);
+                    const label = document.createElement('label');
+                    label.className = 'flex items-center p-3 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200';
+                    label.innerHTML = `
+                        <input type="checkbox" data-folder-index="${i}" class="h-5 w-5 mr-4 rounded text-pink-500 focus:ring-pink-400" ${isChecked ? 'checked' : ''}>
+                        <span class="text-lg">資料夾 ${i+1} (${favoriteFolders[i].size} 個單字)</span>
+                    `;
+                    container.appendChild(label);
+                }
+                const buttonContainer = document.createElement('div');
+                buttonContainer.className = 'modal-buttons flex justify-end gap-4 mt-4';
+                buttonContainer.innerHTML = `
+                    <button onclick="closeModal('add-to-favorite-modal')" class="btn btn-purple">取消</button>
+                    <button onclick="saveFavoriteSelection()" class="btn btn-pink">確認</button>
+                `;
+                modalContent.appendChild(buttonContainer);
             }
             openModal('add-to-favorite-modal');
         }
 
-        function addToFavorite(folderIndex) {
-            const wordToAdd = currentWordObject.word;
-            if (favoriteFolders[folderIndex].size >= 500) {
-                alert(`資料夾 ${folderIndex+1} 已滿 (上限500)！`);
-                return;
-            }
-            favoriteFolders.forEach(folder => folder.delete(wordToAdd));
-            favoriteFolders[folderIndex].add(wordToAdd);
+        function saveFavoriteSelection() {
+            const word = currentWordObject.word;
+            const checkboxes = document.querySelectorAll('#favorite-modal-folders input[type="checkbox"]');
             
+            checkboxes.forEach((cb, index) => {
+                if (cb.checked) {
+                    if(favoriteFolders[index].size < 500) {
+                        favoriteFolders[index].add(word);
+                    } else {
+                       console.warn(`無法加入 "${word}" 至資料夾 ${index + 1}，因為資料夾已滿。`);
+                    }
+                } else {
+                    favoriteFolders[index].delete(word);
+                }
+            });
+
             organizeAndSortWords();
             saveData();
             updateFavoriteButtonState();
@@ -64685,25 +64821,25 @@
             let addedCount = 0;
             let alreadyInFolder = 0;
             const totalWords = currentFlashcardUnit.length;
+            const capacity = 500;
+            const targetFolder = favoriteFolders[folderIndex];
 
             currentFlashcardUnit.forEach(wordObj => {
                 const wordToAdd = wordObj.word;
-                if (favoriteFolders[folderIndex].has(wordToAdd)) {
+                if (targetFolder.has(wordToAdd)) {
                     alreadyInFolder++;
                     return; 
                 }
-                if (favoriteFolders[folderIndex].size >= 500) return; 
-                favoriteFolders.forEach((folder, idx) => {
-                    if (idx !== folderIndex) folder.delete(wordToAdd);
-                });
-                favoriteFolders[folderIndex].add(wordToAdd);
+                if (targetFolder.size >= capacity) return; 
+
+                targetFolder.add(wordToAdd);
                 addedCount++;
             });
             
             let alertMessage = '';
             if (addedCount > 0) alertMessage += `成功加入 ${addedCount} 個新單字至資料夾 ${folderIndex + 1}！\n`;
             if (alreadyInFolder > 0) alertMessage += `${alreadyInFolder} 個單字已存在於該資料夾。\n`;
-            if (addedCount + alreadyInFolder < totalWords) alertMessage += `部分單字因資料夾已滿 (上限500) 而未加入。`;
+            if (addedCount + alreadyInFolder < totalWords) alertMessage += `部分單字因資料夾已滿 (上限${capacity}) 而未加入。`;
             if(alertMessage.trim() === '') alertMessage = "沒有單字被加入。";
             alert(alertMessage.trim());
             
@@ -64791,6 +64927,15 @@
                 const { letter, unit } = minorCb.dataset;
                 if (selectedUnits[letter] !== 'all') { if (!selectedUnits[letter]) selectedUnits[letter] = []; selectedUnits[letter].push(unit); }
             });
+
+            const selectedFavFolders = [];
+            document.querySelectorAll('.favorite-folder-checkbox:checked').forEach(favCb => {
+                selectedFavFolders.push(favCb.dataset.folderIndex);
+            });
+            if (selectedFavFolders.length > 0) {
+                selectedUnits.favoriteFolders = selectedFavFolders;
+            }
+
             closeModal('unit-selection-modal');
         }
 
@@ -64798,16 +64943,8 @@
             const container = document.getElementById('unit-selection-container');
             container.innerHTML = '';
             
-            const renderGroup = (letter, isFavorite = false) => {
+            const renderGroup = (letter) => {
                 let unitData = organizedWords[letter];
-                if (isFavorite) {
-                    const favWords = vocabulary.filter(w => favoriteFolders.some(f => f.has(w.word)));
-                    if (favWords.length > 0) {
-                        unitData = { 1: favWords };
-                    } else {
-                        unitData = null;
-                    }
-                }
                 const hasWords = unitData && Object.keys(unitData).length > 0;
 
                 const unitGroup = document.createElement('div');
@@ -64829,10 +64966,10 @@
                 }
                 
                 majorLabel.appendChild(majorCheckbox);
-                majorLabel.append(isFavorite ? `★ 最愛單字 (全選)` : `單元 ${letter} (全選)`);
+                majorLabel.append(`單元 ${letter} (全選)`);
                 unitGroup.appendChild(majorLabel);
                 
-                if (hasWords && !isFavorite) {
+                if (hasWords) {
                     const minorContainer = document.createElement('div');
                     minorContainer.className = 'minor-units-container pl-8 mt-2 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2';
                     Object.keys(unitData).forEach(unitNum => {
@@ -64863,7 +65000,58 @@
                 return unitGroup;
             };
 
-            container.appendChild(renderGroup('★', true));
+            const renderFavoriteUnitSelection = (container) => {
+                const favWordsExist = favoriteFolders.some(folder => folder.size > 0);
+
+                const unitGroup = document.createElement('div');
+                unitGroup.className = 'unit-group border-b pb-2 mb-2';
+
+                const majorLabel = document.createElement('label');
+                majorLabel.className = `font-bold text-lg flex items-center ${favWordsExist ? 'cursor-pointer' : 'text-gray-400 cursor-not-allowed'}`;
+
+                const majorCheckbox = document.createElement('input');
+                majorCheckbox.type = 'checkbox';
+                majorCheckbox.className = 'major-favorite-checkbox mr-2 h-5 w-5 rounded text-pink-500 focus:ring-pink-400';
+                majorCheckbox.disabled = !favWordsExist;
+
+                if (favWordsExist) {
+                    majorCheckbox.onchange = (e) => {
+                        unitGroup.querySelectorAll('.favorite-folder-checkbox').forEach(cb => cb.checked = e.target.checked);
+                    };
+                }
+
+                majorLabel.appendChild(majorCheckbox);
+                majorLabel.append('★ 最愛單字 (全選)');
+                unitGroup.appendChild(majorLabel);
+
+                if (favWordsExist) {
+                    const minorContainer = document.createElement('div');
+                    minorContainer.className = 'minor-units-container pl-8 mt-2 grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2';
+                    favoriteFolders.forEach((folder, index) => {
+                        if (folder.size > 0) {
+                            const minorLabel = document.createElement('label');
+                            minorLabel.className = 'flex items-center cursor-pointer text-sm';
+                            const minorCheckbox = document.createElement('input');
+                            minorCheckbox.type = 'checkbox';
+                            minorCheckbox.className = 'favorite-folder-checkbox mr-2 h-4 w-4 flex-shrink-0 rounded text-pink-500 focus:ring-pink-400';
+                            minorCheckbox.dataset.folderIndex = index;
+                            minorCheckbox.onchange = () => {
+                                const allMinorChecked = Array.from(unitGroup.querySelectorAll('.favorite-folder-checkbox')).every(cb => cb.checked);
+                                majorCheckbox.checked = allMinorChecked;
+                            };
+                            const textSpan = document.createElement('span');
+                            textSpan.textContent = `資料夾 ${index + 1} (${folder.size} 個單字)`;
+                            minorLabel.appendChild(minorCheckbox);
+                            minorLabel.appendChild(textSpan);
+                            minorContainer.appendChild(minorLabel);
+                        }
+                    });
+                    unitGroup.appendChild(minorContainer);
+                }
+                container.appendChild(unitGroup);
+            }
+
+            renderFavoriteUnitSelection(container);
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').forEach(letter => {
                 if (organizedWords[letter]) container.appendChild(renderGroup(letter));
             });
@@ -64876,12 +65064,22 @@
             if (Object.keys(selectedUnits).length === 0) {
                 wordPool = [...vocabulary];
             } else {
+                if (selectedUnits.favoriteFolders) {
+                    selectedUnits.favoriteFolders.forEach(folderIndexStr => {
+                        const folderIndex = parseInt(folderIndexStr);
+                        const folder = favoriteFolders[folderIndex];
+                        if (folder) {
+                            folder.forEach(wordString => {
+                                const wordObj = vocabulary.find(w => w.word === wordString);
+                                if (wordObj) wordPool.push(wordObj);
+                            });
+                        }
+                    });
+                }
+
                 for (const letter in selectedUnits) {
-                    if (letter === '★') {
-                        const favWords = vocabulary.filter(w => favoriteFolders.some(f => f.has(w.word)));
-                        wordPool.push(...favWords);
-                        continue;
-                    }
+                    if (letter === 'favoriteFolders') continue;
+                    
                     if(!organizedWords[letter]) continue;
                     if (selectedUnits[letter] === 'all') {
                         for (const unitNum in organizedWords[letter]) {
@@ -64930,9 +65128,7 @@
         }
 
         function endPractice() {
-            if (balloonGameManager.stop) balloonGameManager.stop();
-            if (monsterGameManager.stop) monsterGameManager.stop();
-            if (window.potionGame && window.potionGame.end) window.potionGame.end();
+            // cleanupActiveGames() 會在 showPage -> _displayPage 中被呼叫，所以這裡不需要重複停止遊戲
             showPage('practice-setup-page');
         }
 
@@ -66051,7 +66247,25 @@
             }
 
             organizeAndSortWords();
-            showPage('home-page');
+
+            // --- History API & Routing ---
+            window.addEventListener('popstate', (event) => {
+                const pageId = event.state?.pageId || 'home-page';
+                // 直接顯示頁面，不再次推入歷史紀錄
+                _displayPage(pageId);
+            });
+            
+            // 初始載入時檢查 URL hash
+            const initialPage = window.location.hash.substring(1);
+            const validPages = ['home-page', 'learn-main-page', 'learn-minor-page', 'flashcard-page', 'favorite-folders-page', 'search-results-page', 'no-results-page', 'practice-setup-page', 'balloon-game-page', 'monster-setup-page', 'monster-game-page', 'monster-win-page', 'monster-lose-page', 'potion-game-wrapper'];
+
+            // 僅在 hash 為有效頁面 ID 時載入，否則預設回首頁
+            const pageToLoad = validPages.includes(initialPage) ? initialPage : 'home-page';
+
+            // 取代初始狀態，讓首頁正確地成為歷史紀錄的一部分
+            history.replaceState({ pageId: pageToLoad }, '', `#${pageToLoad}`);
+            _displayPage(pageToLoad); // 根據 URL 顯示初始頁面
+            
             document.getElementById('search-input').addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     searchWord();
@@ -66061,5 +66275,3 @@
     </script>
 </body>
 </html>
-
-
