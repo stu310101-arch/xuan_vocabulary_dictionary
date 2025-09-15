@@ -73,7 +73,7 @@
 
 
         /* --- 怪物遊戲專用樣式 --- */
-        .monster-game-screen {
+        #monster-game-screen {
             transition: opacity 0.5s ease-in-out;
             position: fixed; /* 使用 fixed 以覆蓋整個視窗 */
             width: 100vw;
@@ -298,6 +298,14 @@
                 <div id="flashcard" class="flashcard" onclick="this.classList.toggle('is-flipped')">
                     <div class="flashcard-face flashcard-front">
                         <div class="relative w-full h-full flex flex-col justify-center items-center p-8">
+                            <div class="absolute top-4 left-6 flex items-center space-x-4">
+                                <button onclick="event.stopPropagation(); showPage('home-page');" class="text-2xl text-purple-400 hover:text-purple-600" title="返回主頁">
+                                    <i class="fas fa-home"></i>
+                                </button>
+                                <button onclick="event.stopPropagation(); openEditWordModal();" class="text-2xl text-blue-400 hover:text-blue-600" title="編輯單字">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                            </div>
                             <button id="delete-word-btn" onclick="event.stopPropagation(); confirmDeleteWord();" class="hidden absolute top-4 right-4 text-2xl text-red-400 hover:text-red-600">
                                 <i class="fas fa-minus-circle"></i>
                             </button>
@@ -312,7 +320,7 @@
                          <div id="flashcard-details" class="w-full h-full overflow-y-auto p-8 text-left">
                             <!-- JS will inject content here -->
                          </div>
-                         <button id="edit-word-btn" onclick="event.stopPropagation(); openEditWordModal();" class="absolute top-4 left-6 text-2xl text-blue-400 hover:text-blue-600">
+                         <button onclick="event.stopPropagation(); openEditWordModal();" class="absolute top-4 left-6 text-2xl text-blue-400 hover:text-blue-600" title="編輯單字">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
                     </div>
@@ -486,21 +494,33 @@
             <div class="grass"></div>
         </div>
         <!-- 遊戲畫面 -->
-        <div id="monster-game-page" class="monster-game-screen flex-col items-center justify-between hidden p-4 md:p-8">
+        <div id="monster-game-page" class="monster-game-screen flex-col items-center justify-between hidden p-4 md:p-8 relative">
             <div class="w-full flex justify-between items-start text-gray-200"><div id="monster-hp-bar-container" class="relative w-48 h-8 bg-gray-900/50 rounded-full border-2 border-black shadow-inner"><div id="monster-hp-bar-fill" class="h-full bg-red-500 rounded-full transition-all duration-300" style="width: 100%;"></div><span id="monster-hp-text" class="absolute inset-0 w-full h-full flex items-center justify-center text-white font-bold text-lg tracking-wider">HP: 100/100</span></div><div id="monster-timer-display" class="text-3xl font-bold text-red-500">60</div></div>
+            
+            <!-- 跳過清單 -->
+            <div id="monster-skipped-list-container" class="absolute top-24 right-4 w-48 bg-black/50 backdrop-blur-sm p-3 rounded-lg max-h-[60vh] overflow-y-auto hidden md:block">
+                <h4 class="text-lg font-bold text-yellow-400 text-center mb-2 border-b border-yellow-600 pb-1">跳過清單</h4>
+                <ul id="monster-skipped-list" class="text-white text-base space-y-1 list-disc list-inside">
+                    <!-- Skipped words will be added here by JS -->
+                </ul>
+            </div>
+
             <div class="flex flex-col items-center"><div id="monster-display" class="mb-4" style="width: 200px; height: 200px;"></div><div id="monster-hint-display" class="text-2xl md:text-3xl font-bold text-center p-4 bg-black/40 backdrop-blur-sm rounded-lg shadow"><p id="monster-word-hint" class="text-gray-100"></p><p id="monster-word-structure" class="text-sky-400 mt-1"></p></div></div>
             <div class="w-full max-w-md flex flex-col items-center"><p id="monster-feedback-display" class="h-6 text-red-400 font-bold mb-2"></p><input type="text" id="monster-answer-input" class="w-full p-4 border-2 bg-gray-800/80 border-gray-600 text-white rounded-lg text-2xl text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400" placeholder="在這裡輸入答案..." autocomplete="off"></div>
             <div class="w-full max-w-md flex justify-between items-center"><button id="monster-end-game-btn" class="bg-red-600 text-white py-2 px-4 rounded-lg font-bold hover:bg-red-700 transition duration-300">直接結束</button><button id="monster-skip-btn" class="bg-yellow-500 text-white py-2 px-4 rounded-lg font-bold hover:bg-yellow-600 transition duration-300">跳過此題 (怪物會回血)</button></div>
         </div>
         <!-- 成功畫面 -->
-        <div id="monster-win-page" class="monster-game-screen hidden flex-col items-center justify-center text-center bg-gradient-to-b from-sky-200 to-sky-400"><div class="relative"><h1 class="text-9xl font-black text-green-500 text-stroke-white">成功</h1><p class="text-3xl font-bold text-black mt-4">你是勇者 你好棒!</p></div><button onclick="switchScreen('monster-win-page', 'monster-setup-page')" class="mt-8 bg-white text-blue-600 py-3 px-8 rounded-lg text-xl font-bold hover:bg-gray-200 transition duration-300">再玩一次</button></div>
+        <div id="monster-win-page" class="monster-game-screen hidden flex-col items-center justify-center text-center bg-gradient-to-b from-sky-200 to-sky-400"><div class="relative"><h1 class="text-9xl font-black text-green-500 text-stroke-white">成功</h1><p class="text-3xl font-bold text-black mt-4">你是勇者 你好棒!</p></div>
+            <div id="monster-win-skipped-list" class="mt-6 w-full max-w-lg bg-white/60 backdrop-blur-sm p-4 rounded-lg text-black text-left shadow-lg"></div>
+            <button onclick="monsterGameManager.switchToSetup()" class="mt-8 bg-white text-blue-600 py-3 px-8 rounded-lg text-xl font-bold hover:bg-gray-200 transition duration-300">再玩一次</button></div>
         <!-- 失敗畫面 -->
         <div id="monster-lose-page" class="monster-game-screen hidden flex-col items-center justify-center text-center bg-gradient-to-b from-black via-black to-red-900 glitch-container">
             <div class="relative w-full text-center z-10">
                 <h1 class="glitch-text text-9xl font-black text-red-500 text-stroke-red" data-text="失敗">失敗</h1>
                 <p class="glitch-text text-2xl text-white mt-6" data-text="怪物吞噬了英文世界">怪物吞噬了英文世界</p>
                 <p class="glitch-text text-xl text-white mt-2" data-text="努力學習 別灰心 英文世界等你來拯救!">努力學習 別灰心 英文世界等你來拯救!</p>
-                <button onclick="switchScreen('monster-lose-page', 'monster-setup-page')" class="mt-8 bg-gray-700 text-white py-3 px-8 rounded-lg text-xl font-bold hover:bg-gray-600 transition duration-300 border-2 border-white">重新來過</button>
+                <div id="monster-lose-skipped-list" class="mt-6 w-full max-w-lg bg-black/60 backdrop-blur-sm p-4 rounded-lg text-white mx-auto text-left shadow-lg"></div>
+                <button onclick="monsterGameManager.switchToSetup()" class="mt-8 bg-gray-700 text-white py-3 px-8 rounded-lg text-xl font-bold hover:bg-gray-600 transition duration-300 border-2 border-white">重新來過</button>
             </div>
             <div class="glitch-block"></div>
             <div class="glitch-bg"></div>
@@ -64058,7 +64078,6 @@
       "N/A"
     ]
   }
-
         ];
 
         // --- 全域變數和狀態管理 ---
@@ -65115,7 +65134,14 @@
                     return;
                 }
                 monsterGameManager.init(wordPool);
-                switchScreen('practice-setup-page', 'monster-setup-page', true);
+                // 隱藏主應用程式，顯示怪物遊戲容器
+                document.getElementById('app').classList.add('hidden');
+                const monsterContainer = document.getElementById('monster-game-container');
+                monsterContainer.classList.remove('hidden');
+                
+                // 確保只有設定頁面顯示
+                monsterContainer.querySelectorAll('.monster-game-screen').forEach(s => s.classList.add('hidden'));
+                document.getElementById('monster-setup-page').classList.remove('hidden');
 
             } else if (practiceSettings.type === 'potion') {
                  if (wordPool.length < 3) {
@@ -65335,23 +65361,110 @@
         }
 
         // --- 怪物遊戲專用畫面切換函式 ---
-        function switchScreen(hideId, showId, isFromPracticeSetup = false) {
-             const hide = document.getElementById(hideId);
-             const show = document.getElementById(showId);
-             if (!hide || !show) return;
+        function switchScreen(fromId, toId) {
+             const hide = document.getElementById(fromId);
+             const show = document.getElementById(toId);
+             if (hide) hide.classList.add('hidden');
+             if (show) show.classList.remove('hidden');
+        }
 
-             if(isFromPracticeSetup) {
-                document.querySelectorAll('#app > div, #success-page, #failure-page').forEach(page => page.classList.add('hidden'));
-                show.classList.remove('hidden');
-                setTimeout(() => show.classList.remove('opacity-0'), 50);
-             } else {
-                hide.classList.add('opacity-0');
-                setTimeout(() => {
-                    hide.classList.add('hidden');
-                    show.classList.remove('hidden');
-                    setTimeout(() => show.classList.remove('opacity-0'), 50);
-                }, 500);
-             }
+        // --- 新增：渲染可互動的跳過單字列表 ---
+        function renderInteractiveSkippedList(container, words) {
+            container.innerHTML = ''; // 清空先前內容
+
+            if (words.length === 0) {
+                container.innerHTML = '<p class="font-bold text-center">本局沒有跳過任何單字，太棒了！</p>';
+                return;
+            }
+
+            const favoriteOptions = favoriteFolders
+                .map((folder, index) => `<option value="${index}">資料夾 ${index + 1}</option>`)
+                .join('');
+
+            if (favoriteOptions.length === 0) {
+                container.innerHTML = `<h3 class="text-xl font-bold mb-2">本局跳過單字:</h3>
+                    <ul class="text-left list-disc list-inside max-h-48 overflow-y-auto">${words.map(w => `<li>${w}</li>`).join('')}</ul>
+                    <p class="mt-4 text-sm text-center text-gray-500">尚未建立最愛資料夾，無法儲存單字。</p>`;
+                return;
+            }
+
+            const listId = `skipped-list-${Date.now()}`;
+            container.innerHTML = `
+                <h3 class="text-xl font-bold mb-2 text-center">本局跳過單字</h3>
+                <div id="${listId}" class="space-y-1 max-h-40 overflow-y-auto border p-2 rounded-md bg-white/20">
+                    ${words.map((word, index) => `
+                        <div class="flex items-center" data-word="${word}">
+                            <input type="checkbox" id="skip-word-${listId}-${index}" class="h-4 w-4 rounded mr-2 flex-shrink-0">
+                            <label for="skip-word-${listId}-${index}" class="flex-grow">${word}</label>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="mt-4 space-y-2">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="select-all-${listId}" class="h-4 w-4 rounded mr-2">
+                        <label for="select-all-${listId}">全選 / 全不選</label>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <select id="folder-select-${listId}" class="flex-grow p-2 border rounded-md bg-white text-black">
+                            ${favoriteOptions}
+                        </select>
+                        <button id="add-to-folder-${listId}" class="btn btn-blue text-sm px-4 py-2">加入</button>
+                    </div>
+                    <p id="add-feedback-${listId}" class="text-sm text-center h-4"></p>
+                </div>
+            `;
+
+            const listContainer = document.getElementById(listId);
+            const selectAllCheckbox = document.getElementById(`select-all-${listId}`);
+            const folderSelect = document.getElementById(`folder-select-${listId}`);
+            const addButton = document.getElementById(`add-to-folder-${listId}`);
+            const feedbackP = document.getElementById(`add-feedback-${listId}`);
+
+            selectAllCheckbox.addEventListener('change', (e) => {
+                listContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    if (!cb.disabled) {
+                        cb.checked = e.target.checked;
+                    }
+                });
+            });
+
+            addButton.addEventListener('click', () => {
+                const selectedFolderIndex = parseInt(folderSelect.value);
+                const checkedWords = Array.from(listContainer.querySelectorAll('input[type="checkbox"]:checked'));
+                
+                if (checkedWords.length === 0) {
+                    feedbackP.textContent = '請先勾選單字！';
+                    setTimeout(() => feedbackP.textContent = '', 2000);
+                    return;
+                }
+
+                let addedCount = 0;
+                checkedWords.forEach(cb => {
+                    const parentDiv = cb.parentElement;
+                    const word = parentDiv.dataset.word;
+                    
+                    if (!favoriteFolders[selectedFolderIndex].has(word)) {
+                        favoriteFolders[selectedFolderIndex].add(word);
+                        addedCount++;
+                    }
+
+                    // 標記為已加入
+                    cb.disabled = true;
+                    cb.checked = false;
+                    parentDiv.classList.add('text-gray-500', 'line-through');
+                    parentDiv.querySelector('label').classList.add('line-through');
+                });
+                
+                if (addedCount > 0) {
+                    saveData();
+                    organizeAndSortWords();
+                    feedbackP.textContent = `成功加入 ${addedCount} 個單字！`;
+                } else {
+                    feedbackP.textContent = '所選單字皆已存在資料夾中。';
+                }
+                selectAllCheckbox.checked = false;
+                 setTimeout(() => feedbackP.textContent = '', 3000);
+            });
         }
 
 
@@ -65375,7 +65488,9 @@
                 answerInput: document.getElementById('monster-answer-input'),
                 feedback: document.getElementById('monster-feedback-display'),
                 skipBtn: document.getElementById('monster-skip-btn'),
-                endGameBtn: document.getElementById('monster-end-game-btn')
+                endGameBtn: document.getElementById('monster-end-game-btn'),
+                skippedList: document.getElementById('monster-skipped-list'),
+                skippedListContainer: document.getElementById('monster-skipped-list-container')
             };
             const svgs = {
                 idle: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><g><path d="M135.2,8.8c-7.2-2-14.6,0.3-20.1,5.8l-12,12l-12.8,12.8c-8.8,8.8-9.6,22.7-2,30.4l14.1,14.1 c7.7,7.7,21.6,6.8,30.4-2l12.8-12.8l12-12c5.5-5.5,7.8-12.9,5.8-20.1L135.2,8.8z" fill="#A0522D"/><circle cx="118" cy="27" r="5" fill="#8B4513"/><circle cx="150" cy="50" r="5" fill="#8B4513"/><circle cx="130" cy="65" r="5" fill="#8B4513"/><path d="M125,100 C140,80 130,50 120,45" stroke="#68D391" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M50,190 C20,100, 180,100, 150,190 Z" fill="#48BB78"/><path d="M70,120 C40,70 160,70 130,120 L70,120 Z" fill="#48BB78"/><path d="M60,80 L40,40 L70,70 Z" fill="#68D391"/><path d="M140,80 L160,40 L130,70 Z" fill="#68D391"/><circle cx="80" cy="95" r="8" fill="#FEE2E2"/><circle cx="120" cy="95" r="8" fill="#FEE2E2"/><path d="M90,115 C95,110 105,110 110,115" stroke="#4A5568" stroke-width="3" fill="none"/><path d="M85,115 v5" stroke="#4A5568" stroke-width="3" stroke-linecap="round"/><path d="M115,115 v5" stroke="#4A5568" stroke-width="3" stroke-linecap="round"/></g></svg>`,
@@ -65390,6 +65505,7 @@
                 currentWord: null,
                 timerInterval: null,
                 animationInterval: null,
+                skippedWords: [],
                 usedWordIndices: new Set()
             };
             const idleAnimations = ['monster-bob-animation', 'monster-tilt-animation', 'monster-hop-animation'];
@@ -65461,41 +65577,37 @@
                     dom.answerInput.value = '';
                     setTimeout(() => {
                         dom.feedback.textContent = '';
-                    }, 2000);
-                }
+                }, 2000);
             }
+        }
 
-            function skipQuestion() {
-                dom.answerInput.disabled = true;
+        function skipQuestion() {
+            dom.answerInput.disabled = true;
                 dom.skipBtn.disabled = true;
                 dom.endGameBtn.disabled = true;
 
-                // 顯示正確答案 (紅色文字)
-                dom.feedback.textContent = `正確答案是: ${state.currentWord.word}`;
+                if (!state.skippedWords.includes(state.currentWord.word)) {
+                    state.skippedWords.push(state.currentWord.word);
+                }
+                renderSkippedWords();
                 
                 state.currentHP = Math.min(state.maxHP, state.currentHP + Math.floor(Math.random() * 6) + 5);
                 updateHPDisplay();
                 stopIdleAnimation();
                 dom.monsterDisplay.innerHTML = svgs.happy;
                 
-                // 延長計時器讓使用者有時間看到答案
                 setTimeout(() => {
                     dom.monsterDisplay.innerHTML = svgs.idle;
                     startIdleAnimation();
-                    nextWord(); // 這個函式會清除 feedback 文字
+                    nextWord();
 
                     dom.answerInput.disabled = false;
                     dom.skipBtn.disabled = false;
                     dom.endGameBtn.disabled = false;
                     dom.answerInput.focus();
-                }, 2000); // 2 秒鐘看答案
+                }, 2000);
             }
 
-            function updateHPDisplay() {
-                dom.hpText.textContent = `HP: ${state.currentHP}/${state.maxHP}`;
-                dom.hpBarFill.style.width = `${(state.currentHP / state.maxHP) * 100}%`;
-            }
-            
             function stopGameLogic() {
                 clearInterval(state.timerInterval);
                 stopIdleAnimation();
@@ -65504,10 +65616,15 @@
 
             function endGame(isWin) {
                 stopGameLogic();
+                
                 if (isWin) {
+                    const container = document.getElementById('monster-win-skipped-list');
+                    renderInteractiveSkippedList(container, state.skippedWords);
                     switchScreen('monster-game-page', 'monster-win-page');
                     createConfetti();
                 } else {
+                    const container = document.getElementById('monster-lose-skipped-list');
+                    renderInteractiveSkippedList(container, state.skippedWords);
                     switchScreen('monster-game-page', 'monster-lose-page');
                 }
             }
@@ -65524,6 +65641,14 @@
                 }
             }
             
+            function renderSkippedWords() {
+                if (state.skippedWords.length > 0) {
+                    dom.skippedListContainer.classList.remove('hidden');
+                }
+                dom.skippedList.innerHTML = state.skippedWords.map(word => `<li class="truncate">${word}</li>`).join('');
+                dom.skippedListContainer.scrollTop = dom.skippedListContainer.scrollHeight;
+            }
+
             monsterGameManager.init = (wordPool) => {
                 state.wordPool = wordPool;
             };
@@ -65532,6 +65657,9 @@
                 state.currentHP = state.maxHP;
                 state.timeLeft = parseInt(dom.timeSelect.value);
                 state.usedWordIndices.clear();
+                state.skippedWords = [];
+                dom.skippedList.innerHTML = '';
+                dom.skippedListContainer.classList.add('hidden');
                 updateHPDisplay();
                 dom.timerDisplay.textContent = state.timeLeft;
                 switchScreen('monster-setup-page', 'monster-game-page');
@@ -65543,9 +65671,21 @@
             };
             monsterGameManager.end = endGame;
             monsterGameManager.stop = stopGameLogic;
+            monsterGameManager.switchToSetup = () => {
+                // 清理 confetti
+                dom.win.querySelectorAll('.confetti').forEach(el => el.remove());
+                dom.lose.querySelectorAll('.confetti').forEach(el => el.remove());
+                switchScreen('monster-win-page', 'monster-setup-page');
+                switchScreen('monster-lose-page', 'monster-setup-page');
+            };
 
             dom.startBtn.addEventListener('click', monsterGameManager.start);
-            dom.backBtn.addEventListener('click', () => { showPage('practice-setup-page'); });
+            dom.backBtn.addEventListener('click', () => {
+                // 隱藏怪物遊戲，顯示主應用
+                document.getElementById('monster-game-container').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                showPage('practice-setup-page');
+            });
             dom.skipBtn.addEventListener('click', skipQuestion);
             dom.endGameBtn.addEventListener('click', () => endGame(false));
             dom.answerInput.addEventListener('keydown', (e) => {
