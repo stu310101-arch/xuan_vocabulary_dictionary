@@ -64078,6 +64078,7 @@
       "N/A"
     ]
   }
+
         ];
 
         // --- 全域變數和狀態管理 ---
@@ -65647,6 +65648,12 @@
                 }
                 dom.skippedList.innerHTML = state.skippedWords.map(word => `<li class="truncate">${word}</li>`).join('');
                 dom.skippedListContainer.scrollTop = dom.skippedListContainer.scrollHeight;
+            }
+
+            function updateHPDisplay() {
+                dom.hpText.textContent = `HP: ${state.currentHP}/${state.maxHP}`;
+                const hpPercentage = (state.currentHP / state.maxHP) * 100;
+                dom.hpBarFill.style.width = `${hpPercentage}%`;
             }
 
             monsterGameManager.init = (wordPool) => {
