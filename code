@@ -110498,22 +110498,25 @@
 
         function loadData() {
             try {
-                // 修改：讀取 vocabularyStore
                 const savedVocabStore = localStorage.getItem('vocabularyStoreData');
                 const savedFavorites = localStorage.getItem('favoriteFoldersData');
                 const savedUserWords = localStorage.getItem('userAddedWordsData');
                 const savedPotions = localStorage.getItem('potionsData');
                 const savedPityBonus = localStorage.getItem('potionPityBonus');
 
+                const defaultStoreForCheck = structuredClone(vocabularyStore);
+
                 if (savedVocabStore) {
                     const loadedStore = JSON.parse(savedVocabStore);
-                    // 確保所有預設級別都存在，若無則從預設值補上
-                    Object.keys(vocabularyStore).forEach(key => {
-                        if (!loadedStore[key]) {
-                            loadedStore[key] = vocabularyStore[key];
+                    vocabularyStore = loadedStore;
+
+                    // --- 關鍵修正：檢查並還原可能已損壞的核心單字列表 ---
+                    Object.keys(defaultStoreForCheck).forEach(key => {
+                        if (defaultStoreForCheck[key].length > 0 && (!vocabularyStore[key] || !Array.isArray(vocabularyStore[key]) || vocabularyStore[key].length === 0)) {
+                            console.warn(`偵測到 ${key} 的單字列表為空或遺失，將從預設值還原。`);
+                            vocabularyStore[key] = defaultStoreForCheck[key];
                         }
                     });
-                    vocabularyStore = loadedStore;
                 }
 
                 if (savedFavorites) {
@@ -110527,14 +110530,9 @@
                 
                 if (savedPotions) {
                     const loadedPotions = JSON.parse(savedPotions);
-                    // 建立一個 Map 來快速查找已儲存的魔藥解鎖狀態
                     const unlockedStatusMap = new Map(loadedPotions.map(p => [p.id, p.unlocked]));
-
-                    // 遍歷程式中定義的魔藥列表
                     potions.forEach(potionInCode => {
-                        // 如果在存檔中找到了對應ID的魔藥
                         if (unlockedStatusMap.has(potionInCode.id)) {
-                            // 就用存檔中的解鎖狀態來更新當前遊戲中的魔藥狀態
                             potionInCode.unlocked = unlockedStatusMap.get(potionInCode.id);
                         }
                     });
@@ -112905,8 +112903,12 @@
             const initialPage = window.location.hash.substring(1);
             const validPages = ['home-page', 'learn-main-page', 'learn-minor-page', 'flashcard-page', 'favorite-folders-page', 'search-results-page', 'no-results-page', 'practice-setup-page', 'balloon-game-page', 'monster-setup-page', 'monster-game-page', 'monster-win-page', 'monster-lose-page', 'potion-game-wrapper'];
 
-            // 僅在 hash 為有效頁面 ID 時載入，否則預設回首頁
-            const pageToLoad = validPages.includes(initialPage) ? initialPage : 'home-page';
+            let pageToLoad = validPages.includes(initialPage) ? initialPage : 'home-page';
+
+            // --- 關鍵修正：防止在初始載入時直接進入遊戲結束等非預期頁面 ---
+            if (['monster-win-page', 'monster-lose-page', 'success-page', 'failure-page'].includes(pageToLoad)) {
+                pageToLoad = 'home-page';
+            }
 
             // 取代初始狀態，讓首頁正確地成為歷史紀錄的一部分
             history.replaceState({ pageId: pageToLoad }, '', `#${pageToLoad}`);
@@ -112921,3 +112923,4 @@
     </script>
 </body>
 </html>
+
