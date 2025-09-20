@@ -698,7 +698,7 @@
         // 將單一 vocabulary 陣列重構為 vocabularyStore 物件
         let vocabularyStore = {
             level3: [
-                {
+{
     "word": "abandon",
     "definitions": [
       {
@@ -20829,9 +20829,8 @@
       }
     ]
   }
-            ],
+],
             level4: [
-                    
 {
    "word":"abbreviation",
    "definitions":[
@@ -45073,7 +45072,7 @@
          }
       ]
    }
-                ],
+],
             level5: [
 
 {
@@ -110351,7 +110350,7 @@
             { id: 102, name: "快樂氣泡飲", desc: "喝下後會忍不住微笑一整天。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 3, timeRange: [16, 25] } },
             { id: 103, name: "順風耳滴劑", desc: "能稍微聽得更清楚一些。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 3, timeRange: [26, 35] } },
             { id: 104, name: "活力泉水", desc: "感覺精神飽滿，充滿能量。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 3, timeRange: [36, 45] } },
-            { id: 105, name: "好眠牛奶", desc: "讓你做個關於單字的美夢。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 3, timeRange: [30, 9999] } },
+            { id: 105, name: "好眠牛奶", desc: "讓你做個關於單字的美夢。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 3, timeRange: [46, 9999] } },
             { id: 106, name: "微光藥水", desc: "指尖會發出微弱的光芒。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 2, timeRange: [0, 15] } },
             { id: 107, name: "變色墨水", desc: "寫出來的字會隨心情改變顏色。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 2, timeRange: [16, 25] } },
             { id: 108, name: "誠實豆", desc: "吃下後短時間內無法說謊。", unlocked: false, unlockConditions: { difficulty: 'trainee', stars: 2, timeRange: [26, 35] } },
@@ -111518,70 +111517,14 @@
                 }
             });
 
-            // --- 更新的單字庫處理邏輯 ---
-            const priorityOrder = ['level3', 'gept', 'level4', 'level5', 'level6'];
-
-            // 輔助函式：移除重複的定義
-            const getUniqueDefinitions = (definitions) => {
-                const uniqueDefinitions = [];
-                const seenDefs = new Set();
-                for (const def of definitions) {
-                    const defKey = `${def.pos}-${def.meaning}`;
-                    if (!seenDefs.has(defKey)) {
-                        uniqueDefinitions.push(def);
-                        seenDefs.add(defKey);
-                    }
-                }
-                return uniqueDefinitions;
-            };
-
+            // --- 恢復為簡單的單字庫處理邏輯 ---
             if (scope === 'all') {
-                const combinedWordsMap = new Map();
-                
-                priorityOrder.forEach(level => {
-                    if (vocabularyStore[level]) {
-                        vocabularyStore[level].forEach(wordObj => {
-                            const wordKey = wordObj.word.toLowerCase();
-                            if (combinedWordsMap.has(wordKey)) {
-                                const existingWord = combinedWordsMap.get(wordKey);
-                                // 合併新的定義，然後移除重複項
-                                const mergedDefs = [...existingWord.definitions, ...structuredClone(wordObj.definitions)];
-                                existingWord.definitions = getUniqueDefinitions(mergedDefs);
-                            } else {
-                                // 第一次看到這個單字，直接加入
-                                combinedWordsMap.set(wordKey, structuredClone(wordObj));
-                            }
-                        });
-                    }
-                });
-                vocabulary = Array.from(combinedWordsMap.values());
-
-            } else { // 選擇特定級數
-                const currentScopeIndex = priorityOrder.indexOf(scope);
-                // 從當前選擇的級數開始
-                const baseWords = structuredClone(vocabularyStore[scope] || []);
-                const finalWords = [];
-
-                // 為當前級數的每個單字，去尋找它在更低級數中的定義
-                for (const wordObj of baseWords) {
-                    const wordKey = wordObj.word.toLowerCase();
-                    let combinedDefinitions = [...wordObj.definitions]; // 先放入當前級數的定義
-
-                    // 往回尋找所有較低級數
-                    for (let i = 0; i < currentScopeIndex; i++) {
-                        const lowerScope = priorityOrder[i];
-                        const lowerWordObj = vocabularyStore[lowerScope]?.find(w => w.word.toLowerCase() === wordKey);
-                        if (lowerWordObj) {
-                            // 將較低級數的定義加到前面
-                            combinedDefinitions.unshift(...structuredClone(lowerWordObj.definitions));
-                        }
-                    }
-
-                    // 合併後，移除可能重複的定義，並更新單字物件
-                    wordObj.definitions = getUniqueDefinitions(combinedDefinitions);
-                    finalWords.push(wordObj);
-                }
-                vocabulary = finalWords;
+                // 若選擇「全部」，則合併所有級數的單字並移除重複項
+                const allWords = Object.values(vocabularyStore).flat();
+                vocabulary = removeDuplicateWords(allWords);
+            } else {
+                // 若選擇特定級數，直接使用該級數的單字陣列，不進行任何合併
+                vocabulary = structuredClone(vocabularyStore[scope] || []);
             }
             
             organizeAndSortWords();
