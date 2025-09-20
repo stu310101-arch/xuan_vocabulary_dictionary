@@ -112878,11 +112878,6 @@
         // --- 初始化 ---
         window.onload = () => {
             loadData(); // <<<< 啟動時第一件事：讀取存檔
-            
-            // 移除 vocabularyStore 中每個級別的重複單字
-            for (const level in vocabularyStore) {
-                vocabularyStore[level] = removeDuplicateWords(vocabularyStore[level]);
-            }
 
             function loadVoices() {
                 const voices = speechSynthesis.getVoices();
